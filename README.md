@@ -1,12 +1,45 @@
 # deltabreedquery
 
 
-This is a small R package to pull data from Breeding Insight's [DeltaBreed](https://sandbox.breedinginsight.net/) platform into R via [BrAPI](https://brapi.org/) calls. It offers some basic functions to pull four types of data into a properly formatted data frame:
+This is a small R package to pull data from Breeding Insight's [DeltaBreed](https://sandbox.breedinginsight.net/) platform into R via [BrAPI](https://brapi.org/) calls. It offers basic functions to pull three types of data into a properly formatted data frame:
 
 - Germplasm
 - Experiments/Environments
 - Observations
-- Traits (*still working on this one*)
+
+### INSTALLATION
+
+To install the latest version, first make sure the `devtools` package is installed and run:
+
+```
+devtools::install_github("tyrwh/deltabreedquery")
+```
+
+The library can then be loaded per usual with `library(deltabreedquery)`.
+
+### BASIC FUNCTIONS
+
+As of February 2026, all that the library does is allow you to pull the three data types into a neatly formatted data frame:
+
+```
+login_deltabreed()
+germplasm <- get_germplasm()
+experiments <- get_experiments()
+observations <- get_observations()
+```
+
+You authenticate using a BrAPI Base URL and valid Access Token from the specific program you want to query, and then you can pull the entirety of the data from Germplasm, Experiments/Environments, and Observations.
+
+
+### LOGGING IN
+
+To "log in", you need to get a valid Access Token from within DeltaBreed and supply it once, after which it's stored in the `deltabreedquery` global env. These access tokens are valid for 
+
+`logout_deltabreed()` does the reverse. All it does is remove the URL and token from your global env.
+
+### SEARCHING
+
+There are multiple ways to get a response from DeltaBreed.
 
 For each data type, there are two functions: one which sends a GET request to fetch all the data of the given type (e.g. `get_germplasm()`) and one which sends a POST request to search for specific terms (e.g. `search_observations(year = 2024)`).
 
@@ -26,12 +59,6 @@ I used a few basic design principles in writing this:
 1. Fetched data should be returned as a tidy data frame that closely resembles how the data appears in DeltaBreed itself.
 2. If a naming convention would cause problems in R (spaces, special characters), using unambiguous CamelCase names takes precedent over copying DeltaBreed conventions exactly.
 3. All human-readable information associated with a given data type should be included by default, and all non-human readable info should be excluded by default; no `DbId`s in the data frame.
-
-### LOGGING IN
-
-To "log in", you need to get a valid Access Token from within DeltaBreed and supply it once, after which it's stored in the `deltabreedquery` global env. I know this isn't logging in *per se*, but it seems better to use this language for simplicity's sake. Since access tokens expire after 24 hours, it's vaguely analogous to logging in.
-
-`logout_deltabreed()` does the reverse. All it does is remove the URL and token from your global env.
 
 ### QUERYING
 
