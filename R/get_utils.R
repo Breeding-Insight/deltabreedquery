@@ -77,12 +77,12 @@ execute_get_request <- function(url, token, endpoint,
   if (verbose) cat("Number of records found: ", n_records, "\n")
   responses <- list(response)
   # req_perform_iterative should take up where we left off
+  # NOTE - TWH 2/12 - this doesn't seem to be true any more?
   # it doesn't know when to stop, though - supply this based on known page count
   if (n_pages_response > 1) {
-    further_responses <- httr2::req_perform_iterative(req,
+    responses <- httr2::req_perform_iterative(req,
                                                httr2::iterate_with_offset("page"),
                                                max_reqs = n_pages_response-1)
-    responses <- c(responses, further_responses)
   }
   json <- lapply(responses, function(x) httr2::resp_body_json(x,
                                                        simplifyVector = TRUE,
