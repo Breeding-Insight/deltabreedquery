@@ -25,16 +25,18 @@ get_observations <- function() {
   # select and arrange the obs unit df to simplify col selection after merging
   df_obsunits <- dplyr::bind_rows(lapply(json_obsunits, clean_json_obsunits)) |>
     dplyr::select(ExptName, EnvName, Location,
-           ExpUnitID, Row, Column, GermplasmName, GID, TestOrCheck,
-           observationUnitDbId) |>
+                  ExpUnitID, Rep, Block, Row, Column, GermplasmName, GID, TestOrCheck,
+                  observationUnitDbId) |>
     dplyr::arrange(ExptName, EnvName, ExpUnitID)
 
-  df_obs <- dplyr::bind_rows(lapply(json_obs, clean_json_obs))
+  df_obs <- dplyr::bind_rows(lapply(json_obs, clean_json_obs)) |>
+    tidyr::pivot_wider(names_from = "observationVariableName",
+                       values_from = "value")
 
   # merge together and summarize
   dplyr::left_join(df_obsunits, df_obs,
-                  by = "observationUnitDbId") |>
-    dplyr::select(!observationUnitDbId)
+                   by = "observationUnitDbId") |>
+  dplyr::select(!observationUnitDbId)
 
   #cat("Number of observations found:  ", nrow(df_obsunits), "\n")
   #cat("Number of environments found: ", nrow(df_obs), "\n")
@@ -71,11 +73,8 @@ clean_json_obs <- function(json) {
   # validating this is fairly costly from a time perspective
   # just pull the values and dbids as needed
   data |> dplyr::select(observationUnitDbId,
-                 observationVariableName,
-                 value) |>
-    dplyr::arrange(observationVariableName) |>
-    tidyr::pivot_wider(names_from = observationVariableName,
-                       values_from = value)
+                        observationVariableName,
+                        value)
   # side note - Observations response contains year data
   # It's unwise to use this, since some Envs have no observations
   # better to pull it from Seasons
