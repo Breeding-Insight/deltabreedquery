@@ -9,10 +9,10 @@ This is a small R package to pull data from Breeding Insight's [DeltaBreed](http
 
 ### INSTALLATION
 
-To install the latest version, first make sure the `devtools` package is installed and run:
+To install the latest version, first make sure the `remotes` package is installed and run:
 
 ```
-devtools::install_github("tyrwh/deltabreedquery")
+remotes::install_github("tyrwh/deltabreedquery")
 ```
 
 The library can then be loaded per usual with `library(deltabreedquery)`.
