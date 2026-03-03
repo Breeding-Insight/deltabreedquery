@@ -14,7 +14,7 @@
 #' helpful error messages for troubleshooting authentication and endpoint issues.
 #'
 #' @noRd
-build_get_request <- function(url, token, endpoint, page_size = 1000){
+build_get_request <- function(url, token, endpoint, page_size = 5000){
   req <- httr2::request(url) |>
     httr2::req_url_path_append(endpoint) |>
     httr2::req_url_query(pageSize = page_size) |>
@@ -55,7 +55,7 @@ build_get_request <- function(url, token, endpoint, page_size = 1000){
 #'
 #' @noRd
 execute_get_request <- function(url, token, endpoint,
-                                page_size = 1000, verbose = TRUE){
+                                page_size = 5000, verbose = TRUE){
   req <- build_get_request(url, token, endpoint, page_size)
   response <- httr2::req_perform(req)
   json <- response |>
@@ -76,13 +76,13 @@ execute_get_request <- function(url, token, endpoint,
   # there might be a better way to iterate through n+1 remaining pages
   if (verbose) cat("Number of records found: ", n_records, "\n")
   responses <- list(response)
-  # req_perform_iterative should take up where we left off
-  # NOTE - TWH 2/12 - this doesn't seem to be true any more?
+  # NOTE - iterate_with_offset needs to start at 0
   # it doesn't know when to stop, though - supply this based on known page count
   if (n_pages_response > 1) {
     responses <- httr2::req_perform_iterative(req,
-                                               httr2::iterate_with_offset("page"),
-                                               max_reqs = n_pages_response-1)
+                                               httr2::iterate_with_offset("page",
+                                                                          start = 0),
+                                               max_reqs = n_pages_response)
   }
   json <- lapply(responses, function(x) httr2::resp_body_json(x,
                                                        simplifyVector = TRUE,
