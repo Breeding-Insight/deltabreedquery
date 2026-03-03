@@ -20,15 +20,15 @@ get_traits <- function(include_archived = FALSE) {
   # Note - BrAPI nomenclature around trait endpoints is a bit confusing
   # There are endpoints for Ontology, ObservationVariable, and Trait
   # not to mention the Method and Scale endpoints
-  json_traits <- execute_get_request(env$full_url, env$access_token,
-                                     "variables", verbose = FALSE)
+  json_traits <- httr2::execute_get_request(env$full_url, env$access_token,
+                                            "variables", verbose = FALSE)
   dfs_traits <- lapply(json_traits, clean_json_traits)
-  df <- bind_rows(dfs_traits) |>
-    arrange(Name) |>
-    mutate(Units = if_else(ScaleClass == "Numerical", Units, ""))
+  df <- dplyr::bind_rows(dfs_traits) |>
+    dplyr::arrange(Name) |>
+    dplyr::mutate(Units = dplyr::if_else(ScaleClass == "Numerical", Units, ""))
   cat("Number of traits found: \t", nrow(df), "\n")
   if (!include_archived) {
-    df <- df |> filter(Status != "archived")
+    df <- df |> dplyr::filter(Status != "archived")
     cat("Number of active traits: \t", nrow(df), "\n")
   }
   df
@@ -41,19 +41,19 @@ clean_json_traits <- function(json) {
   }
   data |>
     # the final value of synonyms (?) is the full name
-    mutate(FullName = sapply(trait.synonyms,
-                             function(x) tail(x,1)),
-           # if any more names exist past those two, then concat them together
-           # note that this is different from the table view within DB
-           # but it more closely matches the upload template
-           Synonyms = sapply(trait.synonyms,
-                             function(x) ifelse(length(x) > 2,
-                                                paste0(x[2:(length(x)-1)], collapse = ";"),
-                                                "")),
-           Categories = sapply(scale.validValues.categories, collapse_trait_categories)) |>
+    dplyr::mutate(FullName = sapply(trait.synonyms,
+                                    function(x) tail(x,1)),
+                  # if any more names exist past those two, then concat them together
+                  # note that this is different from the table view within DB
+                  # but it more closely matches the upload template
+                  Synonyms = sapply(trait.synonyms,
+                                    function(x) ifelse(length(x) > 2,
+                                                       paste0(x[2:(length(x)-1)], collapse = ";"),
+                                                       "")),
+                  Categories = sapply(scale.validValues.categories, collapse_trait_categories)) |>
     rename_brapi_columns('variables') |>
-    select(Name, FullName, Synonyms, Entity, Attribute, Method,
-           ScaleClass, Units, Min, Max, Categories, Status)
+    dplyr::select(Name, FullName, Synonyms, Entity, Attribute, Method,
+                  ScaleClass, Units, Min, Max, Categories, Status)
 }
 
 collapse_trait_categories <- function(df) {
