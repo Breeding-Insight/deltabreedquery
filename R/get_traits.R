@@ -1,9 +1,8 @@
-library(httr2)
-library(dplyr)
 #' Get observation variables (trait definitions) from a DeltaBreed instance.
 #'
 #' @description Retrieves trait data from a DeltaBreed program via BrAPI.
-#' @return Data frame of trait information drawn from BrAPI endpoints
+#' @return Data frame of trait information drawn from BrAPI `/variables`
+#' endpoint.
 #' @export
 #' @examples
 #' \dontrun{
@@ -57,7 +56,7 @@ clean_json_obsvars <- function(json) {
                   # besides Name and FullName
                   Synonyms = sapply(trait.synonyms,
                                     function(x) ifelse(length(x) > 2,
-                                                       paste0(x[2:(length(x)-1)], collapse = ";"),
+                                                       paste0(x[2:(length(x)-1)], collapse = "; "),
                                                        NA)),
                   Trait = paste(trait.entity, trait.attribute),
                   Categories = sapply(scale.validValues.categories,
@@ -70,6 +69,7 @@ clean_json_obsvars <- function(json) {
 }
 
 # Format the Categories field for categorical data
+# Using
 collapse_trait_categories <- function(df) {
   if (is.null(df)){
     out_str = ""

@@ -1,15 +1,20 @@
-#' Get experiment data
+#' Retrieve experiment summary
 #'
-#' Retrieves a summary of all experiments and environments in a DeltaBreed program.
+#' Retrieves a summary of all experiments and environments in a given DeltaBreed
+#' program. This may include experiments for which no observations have been
+#' recorded yet.
 #'
-#' @return Data frame of experiment information drawn from BrAPI endpoints.
+#' @param verbose Whether to print
+#' @param summarize Whether to include summaries. Setting
+#'
+#' @return Data frame of experiment/environment metadata.
 #' @export
 #' @examples
 #' \dontrun{
+#' login_deltabreed()
 #' get_experiments()
 #' }
-get_experiments <- function(summarize = TRUE) {
-  # Ensure that authentication credentials are available
+get_experiments <- function(verbose = TRUE, summarize = TRUE) {
   if (!auth_exists()) {
     stop("No authentication credentials found. ",
          "Please run `login_deltabreed()` to authenticate first.")
@@ -71,13 +76,14 @@ clean_json_trials <- function(json) {
   if (length(data) == 0){
     return(data.frame())
   }
-  rename_brapi_columns(data, 'trials') |>
+  data <- rename_brapi_columns(data, 'trials') |>
     dplyr::select(ExptName,
                   ExptType,
                   ObservationLevel,
                   CreatedBy,
                   CreatedDate,
                   trialDbId)
+  data
 }
 
 # Studies are the SMALLER entity - "Environment" in DeltaBreed nomenclature
@@ -87,7 +93,7 @@ clean_json_studies <- function(json) {
   if (length(data) == 0){
     return(data.frame())
   }
-  rename_brapi_columns(data, 'studies') |>
+  data <- rename_brapi_columns(data, 'studies') |>
     dplyr::mutate(seasons = unlist(seasons)) |>
     dplyr::select(EnvName,
                   Location,
@@ -95,16 +101,20 @@ clean_json_studies <- function(json) {
                   studyDbId,
                   trialDbId,
                   seasons)
+  data
 }
 
-# Seasons endpoint just has all the years as seasons
+# Seasons endpoint is used to get year(s) of the trials
+# currently this supports an environment being a single year
+# not sure if we will need support for multiple years in the future
 clean_json_seasons <- function(json) {
   data = json$result$data
   if (length(data) == 0){
     return(data.frame())
   }
-  data |>
+  data <- data |>
     dplyr::select(seasonDbId,
                   year) |>
     dplyr::rename(Year = year)
+  data
 }

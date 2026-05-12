@@ -1,11 +1,15 @@
-#' Get all observation data
+#' Retrieve observation data
 #'
-#' @description Retrieves all observation data from a DeltaBreed program via BrAPI.
+#' Retrieves all observation data from a DeltaBreed program via BrAPI calls,
+#' converting it into a data frame resembling how the data is displayed on
+#' DeltaBreed itself.
+#'
 #' @return A data frame of observation units and observations.
 #' @export
 #' @examples
 #' \dontrun{
-#' get_observations()
+#' login_deltabreed()
+#' obs <- get_observations()
 #' }
 get_observations <- function(page_size = 5000,
                              drop_empty_columns = FALSE) {
@@ -89,7 +93,7 @@ clean_json_obs <- function(json) {
   if (length(data) == 0){
     return(data.frame())
   }
-  # there is extra information in the Observation response
+  # there is some metadata in the Observation response
   # but it is all redundant with data from ObsUnits
   # validating this is fairly costly from a time perspective
   # just pull the values and dbids as needed
@@ -97,6 +101,6 @@ clean_json_obs <- function(json) {
                         observationVariableName,
                         value)
   # side note - Observations response often contains year data
-  # It's unwise to use this, since some Envs have no observations
+  # It's unwise to use this, since some Envs have no observations yet
   # better to pull this info from Seasons
 }

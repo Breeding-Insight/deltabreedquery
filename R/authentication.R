@@ -13,7 +13,8 @@
 #' @return No return value, called for side effects (storing credentials)
 #' @param base_url The BrAPI Base URL, found on the BrAPI tab of DeltaBreed
 #'   in the BrAPI Information pane.
-#' @param access_token The Access Token for the.
+#' @param access_token A valid Access Token, retrieved from the DeltaBreed
+#' user interface.
 #' @export
 #' @examples \dontrun{
 #' login_deltabreed()
@@ -62,7 +63,7 @@ login_deltabreed <- function(base_url = NULL, access_token = NULL) {
     cat("URL and Access Token validated!\n")
     test_json <- test_resp |>
       httr2::resp_body_json(simplifyVector = TRUE,
-                     flatten = TRUE)
+                            flatten = TRUE)
     cat("Program name: ",
         test_json$result$data$programName, "\n")
 
@@ -91,7 +92,10 @@ login_deltabreed <- function(base_url = NULL, access_token = NULL) {
 
 #' Clear DeltaBreed authentication credentials
 #'
-#' @description Removes stored credentials (URL and ) from the global environment.
+#' @description Removes stored credentials (URL and access token) from the
+#' package environment. The access token will remain valid for as long as the
+#' DeltaBreed instance specifies, but in order to retrieve data the URL/token
+#' will need to be-entered with `login_deltabreed()`.
 #'
 #' @return No return value, called for side effects (clearing credentials)
 #' @export
@@ -106,10 +110,11 @@ logout_deltabreed <- function() {
   invisible(TRUE)
 }
 
-#' @title Do credentials exist?
+#' @title Check
 #'
 #' @description Checks if a BrAPI Base URL and access token exist in the global
-#'   environment.
+#'   environment. Note that it does not specify whether the credentials are
+#'   valid, merely that they exist.
 #'
 #' @return Logical value indicating if base_url and access_token exist in the
 #'   global env.
@@ -127,10 +132,10 @@ auth_exists <- function() {
 
 #' Validate BrAPI authentication credentials
 #'
-#' Checks if the user has credentials currently stored and
-#'  validates them by performing a test call to the BrAPI endpoint.
-#'  Also prints the remaining time until the access token expires, if
-#'  applicable.
+#' @description Checks if the user has credentials currently stored and
+#' validates them by performing a test call to the BrAPI endpoint.
+#' Also prints the remaining time until the access token expires, if
+#' applicable.
 #'
 #' @return No return value, called for side effects (printing status)
 #' @export
@@ -168,7 +173,7 @@ check_auth <- function() {
       cat("\n✓ URL and Access Token successfully validated!\n")
       test_json <- test_resp |>
         httr2::resp_body_json(simplifyVector = TRUE,
-                       flatten = TRUE)
+                              flatten = TRUE)
       cat("  Program name: ",
           test_json$result$data$programName, "\n")
 

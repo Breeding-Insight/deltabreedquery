@@ -1,13 +1,10 @@
 Package: deltabreedquery
 Type: Package
-Title: Fetching Data from DeltaBreed via BrAPI Calls
+Title: BrAPI Tools for Interacting with DeltaBreed Instances
 Version: 0.1.0
 Author: Tyr Wiesner-Hanks
 Maintainer: Tyr Wiesner-Hanks <twiesnerhanks@ufl.edu>
-Description: This library provides a small number of exposed functions to pull
-    data from DeltaBreed in as close a format and structure as possible to how it appears
-    on DeltaBreed and/or on the XLSX files used for data import and export.
-    Currently, it only works for germplasm, observations, and experiment/environments.
+Description: Tools to pull data from DeltaBreed instances via BrAPI
 License: Apache License 2.0
 Encoding: UTF-8
 LazyData: true

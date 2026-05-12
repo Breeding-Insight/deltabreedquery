@@ -1,17 +1,18 @@
-#' Build a generic BrAPI GET request
+#' Build a generic BrAPI GET request object
 #'
-#' Builds a GET request for a specific BrAPI endpoint and adds more specific
-#' error handling messages.
+#' @description Builds a GET request for a specific BrAPI endpoint and adds more
+#' specific error handling messages.
 #'
 #' @param url The DeltaBreed BrAPI URL (including /brapi/v2) to query.
 #' @param token A valid Access Token for the instance.
 #' @param endpoint The specific endpoint to query, e.g. germplasm or programinfo.
 #' @param page_size Number of records to request per page. Default is 5000.
 #' @return A httr2 request object.
+#'
 #' @details This function builds a GET request with the necessary headers
-#' (which endpoint to query, page size, authentication token) to make a valid
-#' request to a BrAPI endpoint. It adds DeltaBreed-specific error handling for
-#' common HTTP status codes to help users troubleshoot in case of any issues.
+#' (which endpoint to query, page size, authentication token) needed to make a
+#' valid request to a BrAPI endpoint. It adds DeltaBreed-specific error handling
+#' for common HTTP status codes to help users troubleshoot in case.
 #'
 #' @noRd
 build_get_request <- function(url, token, endpoint, page_size = 5000){
@@ -39,7 +40,7 @@ build_get_request <- function(url, token, endpoint, page_size = 5000){
   req
 }
 
-#' Execute a BrAPI GET request for a single endpoint.
+#' Execute a GET request
 #'
 #' Executes a request constructed by build_get_request() and returns the a list
 #' of responses in parsed JSON format.
