@@ -26,7 +26,6 @@ get_observations <- function(page_size = 5000,
                                        page_size = page_size)
   json_obsunits <- execute_get_request(obsunit_request)
 
-
   cat("Requesting phenotype values...\n")
   obs_request <- build_get_request(env$full_url,
                                    env$access_token,
@@ -34,7 +33,7 @@ get_observations <- function(page_size = 5000,
                                    page_size = page_size)
   json_obs <- execute_get_request(obs_request)
 
-  # Select the columns and arrange rows of obs units for readability
+  # Select using the final desired column ordering
   df_obsunits <- dplyr::bind_rows(lapply(json_obsunits, clean_json_obsunits)) |>
     dplyr::select(ExptName,
                   EnvName,
@@ -48,7 +47,21 @@ get_observations <- function(page_size = 5000,
                   GID,
                   TestOrCheck,
                   observationUnitDbId) |>
-    dplyr::arrange(ExptName, EnvName, ExpUnitID)
+    dplyr::arrange(ExptName, EnvName)
+
+  # slightly complex sorting here so we can handle integer ExpUnitIDs
+  # if someone puts 1,2,[...],10,11,12, we want to sort that like an integer
+  # but it's in a character column, so it will be sorted like 1,10,11,[...]
+  df_obsunits <- df_obsunits |>
+    dplyr::group_by(ExptName, EnvName) |>
+    dplyr::mutate(all_integers = all(!grepl("\\D", ExpUnitID))) |>
+    # order(order()) gives us an index for sorting the data frame
+    dplyr::mutate(new_order = ifelse(all_integers,
+                            order(order(as.integer(ExpUnitID))),
+                            order(order(ExpUnitID)))) |>
+    dplyr::ungroup() |>
+    dplyr::arrange(ExptName, EnvName, new_order) |>
+    dplyr::select(!c(all_integers, new_order))
 
   # observations are long format (np x 1), need to be wide (n x p)
   df_obs <- dplyr::bind_rows(lapply(json_obs, clean_json_obs)) |>
@@ -56,7 +69,7 @@ get_observations <- function(page_size = 5000,
                        values_from = "value")
 
   # dbIds needed for merging, but drop after
-  # only want human-readable info in the final data frame
+  # we only want human-readable info in the final data frame
   df_final <- dplyr::left_join(df_obsunits, df_obs,
                                by = "observationUnitDbId") |>
     dplyr::select(!observationUnitDbId)
@@ -96,7 +109,7 @@ clean_json_obs <- function(json) {
   # there is some metadata in the Observation response
   # but it is all redundant with data from ObsUnits
   # validating this is fairly costly from a time perspective
-  # just pull the values and dbids as needed
+  # just pull the values and DbIds for merging purposes
   data |> dplyr::select(observationUnitDbId,
                         observationVariableName,
                         value)

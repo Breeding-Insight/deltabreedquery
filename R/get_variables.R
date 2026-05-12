@@ -6,9 +6,9 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' get_traits()
+#' get_variables()
 #' }
-get_traits <- function(include_archived = FALSE, page_size = 1000) {
+get_variables <- function(include_archived = FALSE, page_size = 1000) {
   if (!auth_exists()) {
     stop("No authentication credentials found. ",
          "Please run `login_deltabreed()` to authenticate first.")
