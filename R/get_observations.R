@@ -17,15 +17,17 @@ get_observations <- function(page_size = 5000,
 
   cat("Requesting observation units...\n")
   obsunit_request <- build_get_request(env$full_url,
-                                     env$access_token,
-                                     "observationunits",
-                                     page_size = page_size)
+                                       env$access_token,
+                                       "observationunits",
+                                       page_size = page_size)
   json_obsunits <- execute_get_request(obsunit_request)
 
 
   cat("Requesting phenotype values...\n")
-  obs_request <- build_get_request(env$full_url, env$access_token,
-                                "observations")
+  obs_request <- build_get_request(env$full_url,
+                                   env$access_token,
+                                   "observations",
+                                   page_size = page_size)
   json_obs <- execute_get_request(obs_request)
 
   # Select the columns and arrange rows of obs units for readability

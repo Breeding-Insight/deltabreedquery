@@ -1,6 +1,6 @@
 library(httr2)
 library(dplyr)
-#' Get trait data
+#' Get observation variables (trait definitions) from a DeltaBreed instance.
 #'
 #' @description Retrieves trait data from a DeltaBreed program via BrAPI.
 #' @return Data frame of trait information drawn from BrAPI endpoints
@@ -9,23 +9,27 @@ library(dplyr)
 #' \dontrun{
 #' get_traits()
 #' }
-
-get_traits <- function(include_archived = FALSE) {
+get_traits <- function(include_archived = FALSE, page_size = 1000) {
   if (!auth_exists()) {
     stop("No authentication credentials found. ",
          "Please run `login_deltabreed()` to authenticate first.")
   }
   env <- get("deltabreedr_global", envir = .GlobalEnv)
 
-  # Note - BrAPI nomenclature around trait endpoints is a bit confusing
-  # There are endpoints for Ontology, ObservationVariable, and Trait
-  # not to mention the Method and Scale endpoints
-  json_traits <- httr2::execute_get_request(env$full_url, env$access_token,
-                                            "variables", verbose = FALSE)
-  dfs_traits <- lapply(json_traits, clean_json_traits)
-  df <- dplyr::bind_rows(dfs_traits) |>
+  # BrAPI nomenclature around trait endpoints is a bit confusing
+  # lots of endpoints, but the one we need is mostly in /variables
+  obsvars_request <- build_get_request(env$full_url,
+                                    env$access_token,
+                                    "variables",
+                                    page_size = page_size)
+  json_obsvars <- execute_get_request(obsvars_request)
+
+  dfs_obsvars <- lapply(json_obsvars, clean_json_obsvars)
+
+  df <- dplyr::bind_rows(dfs_obsvars) |>
     dplyr::arrange(Name) |>
-    dplyr::mutate(Units = dplyr::if_else(ScaleClass == "Numerical", Units, ""))
+    dplyr::mutate(Units = dplyr::if_else(ScaleClass == "Numerical", Units, NA))
+
   cat("Number of traits found: \t", nrow(df), "\n")
   if (!include_archived) {
     df <- df |> dplyr::filter(Status != "archived")
@@ -34,28 +38,38 @@ get_traits <- function(include_archived = FALSE) {
   df
 }
 
-clean_json_traits <- function(json) {
+clean_json_obsvars <- function(json) {
   data = json$result$data
   if (length(data) == 0){
     return(data.frame())
   }
-  data |>
-    # the final value of synonyms (?) is the full name
+
+  # formatting and display of observation variables is a thicket of thorns
+  # the table as seen on DB is quite different from the downloaded version
+  # some fields (e.g. full description) are not available via BrAPI calls
+  data <- data |>
+    dplyr::filter(status == "active") |>
+    # the first value of synonyms is the Name field ()
+    # the last value of synonyms is the plain-text FullName
     dplyr::mutate(FullName = sapply(trait.synonyms,
                                     function(x) tail(x,1)),
-                  # if any more names exist past those two, then concat them together
-                  # note that this is different from the table view within DB
-                  # but it more closely matches the upload template
+                  # only put values into Synonyms field if alternate names exist
+                  # besides Name and FullName
                   Synonyms = sapply(trait.synonyms,
                                     function(x) ifelse(length(x) > 2,
                                                        paste0(x[2:(length(x)-1)], collapse = ";"),
-                                                       "")),
-                  Categories = sapply(scale.validValues.categories, collapse_trait_categories)) |>
+                                                       NA)),
+                  Trait = paste(trait.entity, trait.attribute),
+                  Categories = sapply(scale.validValues.categories,
+                                      collapse_trait_categories)) |>
     rename_brapi_columns('variables') |>
-    dplyr::select(Name, FullName, Synonyms, Entity, Attribute, Method,
-                  ScaleClass, Units, Min, Max, Categories, Status)
+    dplyr::select(Name, FullName, Trait, Method,
+                  ScaleClass, Units, Min, Max, Categories, Synonyms, Status)
+
+  data
 }
 
+# Format the Categories field for categorical data
 collapse_trait_categories <- function(df) {
   if (is.null(df)){
     out_str = ""

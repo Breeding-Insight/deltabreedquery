@@ -24,8 +24,6 @@ trials,additionalInfo.defaultObservationLevel,ObservationLevel
 trials,additionalInfo.createdBy.userName,CreatedBy
 trials,additionalInfo.createdDate,CreatedDate
 variables,observationVariableName,Name
-variables,trait.entity,Entity
-variables,trait.attribute,Attribute
 variables,method.methodClass,Method
 variables,scale.dataType,ScaleClass
 variables,scale.scaleName,Units
