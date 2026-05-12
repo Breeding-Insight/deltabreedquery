@@ -16,7 +16,8 @@ get_germplasm <- function() {
   env <- get("deltabreedr_global", envir = .GlobalEnv)
 
   # send GET request and clean JSON responses
-  json <- execute_get_request(env$full_url, env$access_token, "germplasm")
+  json <- build_get_request(env$full_url, env$access_token, "germplasm") |>
+    execute_get_request()
   dfs <- lapply(json, clean_json_germplasm)
   df <- dplyr::bind_rows(dfs)
   df
