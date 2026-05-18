@@ -4,8 +4,8 @@
 #' program. This may include experiments for which no observations have been
 #' recorded yet.
 #'
-#' @param verbose Whether to print
-#' @param summarize Whether to include summaries. Setting
+#' @param verbose Whether to print out the number of experiments/environments found
+#' @param include_dbids Whether to include the studyDbIds, typically for debugging or use elsewhere
 #'
 #' @return Data frame of experiment/environment metadata.
 #' @export
@@ -14,7 +14,8 @@
 #' login_deltabreed()
 #' get_experiments()
 #' }
-get_experiments <- function(verbose = TRUE, summarize = TRUE) {
+get_experiments <- function(verbose = TRUE,
+                            include_dbids = FALSE) {
   if (!auth_exists()) {
     stop("No authentication credentials found. ",
          "Please run `login_deltabreed()` to authenticate first.")
@@ -25,48 +26,57 @@ get_experiments <- function(verbose = TRUE, summarize = TRUE) {
   json_trials <- build_get_request(env$full_url,
                                    env$access_token,
                                    'trials') |>
-    execute_get_request(verbose = FALSE)
+    execute_get_request()
 
   json_studies <- build_get_request(env$full_url,
                                     env$access_token,
                                     'studies') |>
-    execute_get_request(verbose = FALSE)
+    execute_get_request()
 
   json_seasons <- build_get_request(env$full_url,
                                     env$access_token,
                                     'seasons') |>
-    execute_get_request(verbose = FALSE)
+    execute_get_request()
 
   df_trials <- dplyr::bind_rows(lapply(json_trials, clean_json_trials))
   df_studies <- dplyr::bind_rows(lapply(json_studies, clean_json_studies))
   df_seasons <- dplyr::bind_rows(lapply(json_seasons, clean_json_seasons))
 
-  cat("Number of Experiments found:  ", nrow(df_trials), "\n")
-  cat("Number of Environments found: ", nrow(df_studies), "\n")
+  if (verbose == TRUE){
+    cat("Number of Experiments found:  ", nrow(df_trials), "\n")
+    cat("Number of Environments found: ", nrow(df_studies), "\n")
+  }
 
-  # Join the seasons df into studies
+  # will need to revisit seasons logic if we ever get multi-year environments
   df_studies <- dplyr::left_join(df_studies,
                                  df_seasons,
                                  by = dplyr::join_by(seasons == seasonDbId)) |>
     dplyr::select(!seasons)
 
+
+  # define columns as a character vector so it's more flexible in case of changes
+  final_cols <- c(
+    "ExptName",
+    "ExptType",
+    "EnvName",
+    "Location",
+    "Year",
+    "ObservationLevel",
+    "CreatedBy",
+    "CreatedDate"
+  )
+  if (include_dbids == TRUE){
+    final_cols <- c(final_cols, c("studyDbId","trialDbId"))
+  }
+
   df_expts <- dplyr::full_join(df_trials,
                                df_studies,
                                by = "trialDbId") |>
-    dplyr::select(ExptName,
-                  ExptType,
-                  EnvName,
-                  Location,
-                  Year,
-                  ObservationLevel,
-                  CreatedBy,
-                  CreatedDate) |>
+    dplyr::select(all_of(final_cols)) |>
     dplyr::arrange(Year,
                    ExptName,
                    EnvName)
 
-  # TODO - when they implement multiple seasons (for long lived perennials)
-  # revisit this to add support for multi-year cycles
   df_expts
 }
 
