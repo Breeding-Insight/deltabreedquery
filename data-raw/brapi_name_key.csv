@@ -6,10 +6,9 @@ germplasm,seedSource,Source
 germplasm,additionalInfo.pedigreeByName,Pedigree
 germplasm,additionalInfo.createdDate,CreatedDate
 germplasm,additionalInfo.createdBy.userName,CreatedBy
-observationunits,trialName,ExptName
+observationunits,trialName,ExpName
 observationunits,studyName,EnvName
 observationunits,locationName,Location
-observationunits,observationUnitName,ExpUnitID
 observationunits,observationUnitPosition.positionCoordinateX,Row
 observationunits,observationUnitPosition.positionCoordinateY,Column
 observationunits,germplasmName,GermplasmName
@@ -18,8 +17,8 @@ observationunits,observationUnitPosition.entryType,TestOrCheck
 studies,studyName,EnvName
 studies,locationName,Location
 studies,active,Active
-trials,trialName,ExptName
-trials,additionalInfo.experimentType,ExptType
+trials,trialName,ExpName
+trials,additionalInfo.experimentType,ExpType
 trials,additionalInfo.defaultObservationLevel,ObservationLevel
 trials,additionalInfo.createdBy.userName,CreatedBy
 trials,additionalInfo.createdDate,CreatedDate

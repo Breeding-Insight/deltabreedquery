@@ -2,7 +2,7 @@
 % Please edit documentation in R/authentication.R
 \name{auth_exists}
 \alias{auth_exists}
-\title{Do credentials exist?}
+\title{Check}
 \usage{
 auth_exists()
 }
@@ -12,5 +12,6 @@ Logical value indicating if base_url and access_token exist in the
 }
 \description{
 Checks if a BrAPI Base URL and access token exist in the global
-  environment.
+  environment. Note that it does not specify whether the credentials are
+  valid, merely that they exist.
 }

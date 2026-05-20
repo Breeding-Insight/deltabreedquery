@@ -10,5 +10,8 @@ logout_deltabreed()
 No return value, called for side effects (clearing credentials)
 }
 \description{
-Removes stored credentials (URL and ) from the global environment.
+Removes stored credentials (URL and access token) from the
+package environment. The access token will remain valid for as long as the
+DeltaBreed instance specifies, but in order to retrieve data the URL/token
+will need to be-entered with `login_deltabreed()`.
 }

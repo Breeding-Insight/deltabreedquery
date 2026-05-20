@@ -56,12 +56,11 @@ get_experiments <- function(verbose = TRUE,
 
   # define columns as a character vector so it's more flexible in case of changes
   final_cols <- c(
-    "ExptName",
-    "ExptType",
+    "ExpName",
+    "ExpType",
     "EnvName",
     "Location",
     "Year",
-    "ObservationLevel",
     "CreatedBy",
     "CreatedDate"
   )
@@ -74,7 +73,7 @@ get_experiments <- function(verbose = TRUE,
                                by = "trialDbId") |>
     dplyr::select(all_of(final_cols)) |>
     dplyr::arrange(Year,
-                   ExptName,
+                   ExpName,
                    EnvName)
 
   df_expts
@@ -87,9 +86,8 @@ clean_json_trials <- function(json) {
     return(data.frame())
   }
   data <- rename_brapi_columns(data, 'trials') |>
-    dplyr::select(ExptName,
-                  ExptType,
-                  ObservationLevel,
+    dplyr::select(ExpName,
+                  ExpType,
                   CreatedBy,
                   CreatedDate,
                   trialDbId)
