@@ -15,25 +15,40 @@ get_germplasm <- function() {
   }
   env <- get("deltabreedr_global", envir = .GlobalEnv)
 
-  # send GET request and clean JSON responses
-  json <- build_get_request(env$full_url, env$access_token, "germplasm") |>
+  json <- build_get_request(env$full_url,
+                            env$access_token,
+                            "germplasm") |>
     execute_get_request()
   dfs <- lapply(json, clean_json_germplasm)
   df <- dplyr::bind_rows(dfs)
   df
 }
 
-
+# cleaning function applied to each page of response JSON
 clean_json_germplasm <- function(json) {
   data <- json$result$data
-  # account for empty responses, if any occur
   if (length(data) == 0){
     return(data.frame())
   }
-  rename_brapi_columns(data, 'germplasm') |>
-    dplyr::select(GID, GermplasmName, BreedingMethod,
-           Source, Pedigree,
-           CreatedDate, CreatedBy) |>
+  mapping_germplasm <- define_mapping_germplasm()
+  renamed <- rename_new(data, mapping_germplasm) |>
     dplyr::arrange(as.integer(GID))
+  renamed
+}
+
+# define the mappings here, instead of in a .CSV accompanying the package
+# ended up being easier to track and manage
+# we can also use the ordering of this vector to stipulate the final ordering
+define_mapping_germplasm <- function(){
+  mapping <- c(
+    "GID" = "accessionNumber",
+    "GermplasmName" = "germplasmName",
+    "BreedingMethod" = "additionalInfo.breedingMethod",
+    "Source" = "seedSource",
+    "Pedigree" = "additionalInfo.pedigreeByName",
+    "CreatedDate" = "additionalInfo.createdDate",
+    "CreatedBy" = "additionalInfo.createdBy.userName"
+  )
+  mapping
 }
 

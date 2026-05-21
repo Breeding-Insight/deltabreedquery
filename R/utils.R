@@ -26,4 +26,19 @@ rename_brapi_columns <- function(resp_df, endpoint){
   df
 }
 
+rename_new <- function(data, mapping_vector){
+  # mapping_vector has DeltaBreed terms as names, BrAPI terms as values
+  # add missing columns (if any)
+  missing_cols <- setdiff(na.omit(mapping_vector),
+                          colnames(data))
+  for (col in missing_cols) {
+    data[[col]] <- NA
+  }
+  df <- data |>
+    dplyr::rename(all_of(na.omit(mapping_vector))) |>
+    dplyr::select(names(mapping_vector))
+
+  df
+}
+
 
