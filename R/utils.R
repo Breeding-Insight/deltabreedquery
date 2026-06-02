@@ -1,44 +1,34 @@
-# expands a data frame to include all strings given in target_cols as headers
-add_columns_to_match <- function(df, target_cols){
-  missing_cols <- setdiff(target_cols, colnames(df))
-  for (col in missing_cols) {
-    df[[col]] <- NA
+# operates on a single page of JSON response
+json_to_data <- function(json){
+  data <- json$result$data
+  if (length(data) == 0){
+    return(data.frame())
   }
-  df <- df[, target_cols]
+  data
+}
+
+# response pages should always be packaged into a list
+# even if only one page
+json_list_to_df <- function(json_list){
+  df_list <- lapply(json_list, json_to_data)
+  df <- dplyr::bind_rows(df_list)
   df
 }
 
-# rename columns of a df from BrAPI names to DeltaBreed names
-# mapping comes from data-raw/brapi_name_key
-rename_brapi_columns <- function(resp_df, endpoint){
-  brapi_name_key |>
-    dplyr::filter(endpoint_name == endpoint) -> filtered_key
-  # add missing columns (if any)
-  missing_cols <- setdiff(filtered_key$name_brapi, colnames(resp_df))
-  for (col in missing_cols) {
-    resp_df[[col]] <- NA
-  }
-  # create a named vector lookup for use with rename()
-  endpoint_lookup <- filtered_key$name_brapi
-  names(endpoint_lookup) <- filtered_key$name_output
-  df <- resp_df |>
-    dplyr::rename(all_of(endpoint_lookup))
-  df
-}
-
-rename_new <- function(data, mapping_vector){
+# convert column names in a data frame from BrAPI convention to DeltaBreed names
+# also handles the ordering
+# mapping vector comes from define_mapping_xyz() function in each get_xyz.R file
+brapi_to_db_names <- function(data, mapping_vector){
   # mapping_vector has DeltaBreed terms as names, BrAPI terms as values
-  # add missing columns (if any)
-  missing_cols <- setdiff(na.omit(mapping_vector),
-                          colnames(data))
+  renamed <- data |>
+    dplyr::rename(any_of(na.omit(mapping_vector)))
+  # Add any columns that happened to be missed
+  missing_cols <- setdiff(names(mapping_vector),
+                          colnames(renamed))
   for (col in missing_cols) {
-    data[[col]] <- NA
+    renamed[[col]] <- NA
   }
-  df <- data |>
-    dplyr::rename(all_of(na.omit(mapping_vector))) |>
+  renamed <- renamed |>
     dplyr::select(names(mapping_vector))
-
-  df
+  renamed
 }
-
-

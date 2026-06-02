@@ -18,8 +18,6 @@
 build_get_request <- function(url, token, endpoint, page_size = 5000){
   req <- httr2::request(url) |>
     httr2::req_url_path_append(endpoint) |>
-    # define page_size in the initial baseline request
-    # don't want multiple requests in a series to be able to have different page sizes
     httr2::req_url_query(pageSize = page_size) |>
     httr2::req_auth_bearer_token(token) |>
     # Custom error messages to help people troubleshoot
@@ -34,6 +32,10 @@ build_get_request <- function(url, token, endpoint, page_size = 5000){
              "\nSpecified BrAPI endpoint not found." ,
              " Please double-check that your BrAPI URL is correct.",
              " If this issue persists, please contact the package maintainers.")
+      } else if (httr2::resp_status(resp) == 500){
+        stop("Status code: 500",
+             "\nInternal Server Error. Please record the details of this request ",
+             "to the DeltaBreed team to figure out next steps.")
       }
       httr2::resp_status(resp) != 200
     })
