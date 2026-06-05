@@ -1,5 +1,7 @@
 #' Get germplasm data
 #'
+#' @param page_size
+#'
 #' @description Retrieves all germplasm data from the current DeltaBreed instance.
 #' @return Germplasm data from the BrAPI API
 #' @export
@@ -8,7 +10,7 @@
 #' login_deltabreed()
 #' germplasm <- get_germplasm()
 #' }
-get_germplasm <- function(page_size = 5000) {
+get_germplasm <- function(page_size = 10000) {
   if (!auth_exists()) {
     stop("No authentication credentials found. ",
          "Please run `login_deltabreed()` to authenticate first.")
