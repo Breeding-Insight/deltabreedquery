@@ -63,7 +63,7 @@ After you supply the URL, the terminal will prompt you for an Access Token. To g
 
 You should then be able fetch data as described below.
 
-You can run `check_auth()` at any time to check whether you have valid credentials stored, which program you are currently logged into, and when the current access token will expire.
+You can run `check_auth()` at any time to check whether you have valid credentials stored, which program you are currently "logged into," and when the current access token will expire.
 
 ## Retrieving data
 
@@ -98,6 +98,6 @@ All filters correspond to one of the columns returned by `get_experiment()`, so 
 ## Adjusting page size for faster calls
 For most BrAPI requests, the response sent by the BrAPI server is *paginated*. Instead of returning a single massive JSON document, the server returns a series of JSON documents, each with a given number of records (the page size), which the client program sequentially retrieves and reads. When you send a BrAPI request, you can usually request that the server use a specific page size.
 
-`get_germplasm()`, `get_observations()`, and `filter_observations()` all take a `page_size` argument, set to 5000 by default. Increasing the page size can speed up your requests, but setting it too high can cause server errors. If you find that one of these functions is taking too long, try increasing this value to 10000 or higher.
+`get_germplasm()`, `get_observations()`, and `filter_observations()` all take a `page_size` argument, set to 10000 by default. Increasing the page size can speed up your requests, but setting it too high can cause server errors. If you find that one of these functions is taking too long, you can try increasing this value.
 
 `get_experiments()` and `get_variables()` do not take a `page_size` argument, since these responses are usually several orders of magnitude smaller than germplasm/observations and do not need adjustment.
