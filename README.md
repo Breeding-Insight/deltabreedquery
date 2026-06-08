@@ -45,7 +45,7 @@ To retrieve data from your DeltaBreed instance, you will need two things:
 2. A temporary *Access Token* that authenticates your BrAPI calls for 24 hours.
 
 Both of these can be found on the **BrAPI** tab of your DeltaBreed instance:
-![A DeltaBreed instance opened to the BrAPI tab](https://github.com/Breeding-Insight/deltabreedquery/blob/main/.md_resources/brapi_tab_full.png)
+![A DeltaBreed instance opened to the BrAPI tab](.md_resources/brapi_tab_full.png)
 
 
 While you can simply run `login_deltabreed()` and enter the Base URL at the time of login, you can also add the URL to the `login_deltabreed()` call at the start of your R script, since the URL for a given program will never change:
@@ -55,7 +55,7 @@ login_deltabreed("https://rel-test.breedinginsight.net/v1/programs/07ffcd99-c0ff
 ```
 
 After you supply the URL, the terminal will prompt you for an Access Token. To generate this, hit the **Generate Access Token** button at right and copy-paste the token in into your terminal:
-![An access token generated on Deltabreed](https://github.com/Breeding-Insight/deltabreedquery/blob/main/.md_resources/access_token.png)
+![An access token generated on Deltabreed](.md_resources/access_token.png)
 
 You should then be able fetch data as described below.
 
