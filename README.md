@@ -57,9 +57,8 @@ login_deltabreed("https://rel-test.breedinginsight.net/v1/programs/07ffcd99-c0ff
 ```
 
 After you supply the URL, the terminal will prompt you for an Access Token. To generate this, hit the **Generate Access Token** button at right and copy-paste the token in into your terminal:
-![An access token generated on Deltabreed](data-raw/github_images/access_token.png){ width:1028px; height:310px }
 
-<img src="https://github.com/Breeding-Insight/deltabreedquery/blob/main/data-raw/github_images/access_token.png" alt="An access token generated on Deltabreed" width="514" height="564" />
+<img src="https://github.com/Breeding-Insight/deltabreedquery/blob/main/data-raw/github_images/access_token.png" alt="An access token generated on Deltabreed" width="343" height="376" />
 
 
 You should then be able fetch data as described below.
