@@ -2,18 +2,26 @@
 % Please edit documentation in R/get_experiments.R
 \name{get_experiments}
 \alias{get_experiments}
-\title{Get experiment data}
+\title{Retrieve experiment summary}
 \usage{
-get_experiments(summarize = TRUE)
+get_experiments(verbose = TRUE, include_dbids = FALSE)
+}
+\arguments{
+\item{verbose}{Whether to print out the number of experiments/environments found}
+
+\item{include_dbids}{Whether to include the studyDbIds, typically for debugging or use elsewhere}
 }
 \value{
-Data frame of experiment information drawn from BrAPI endpoints.
+Data frame of experiment/environment metadata.
 }
 \description{
-Retrieves the list of all experiments and environments in a DeltaBreed program.
+Retrieves a summary of all experiments and environments in a given DeltaBreed
+program. This may include experiments for which no observations have been
+recorded yet.
 }
 \examples{
 \dontrun{
+login_deltabreed()
 get_experiments()
 }
 }

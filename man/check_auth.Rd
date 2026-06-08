@@ -11,7 +11,7 @@ No return value, called for side effects (printing status)
 }
 \description{
 Checks if the user has credentials currently stored and
- validates them by performing a test call to the BrAPI endpoint.
- Also prints the remaining time until the access token expires, if
- applicable.
+validates them by performing a test call to the BrAPI endpoint.
+Also prints the remaining time until the access token expires, if
+applicable.
 }

@@ -10,7 +10,8 @@ login_deltabreed(base_url = NULL, access_token = NULL)
 \item{base_url}{The BrAPI Base URL, found on the BrAPI tab of DeltaBreed
 in the BrAPI Information pane.}
 
-\item{access_token}{The Access Token for the.}
+\item{access_token}{A valid Access Token, retrieved from the DeltaBreed
+user interface.}
 }
 \value{
 No return value, called for side effects (storing credentials)
