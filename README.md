@@ -10,11 +10,14 @@ This is an R package to pull data from Breeding Insight's [DeltaBreed](https://s
 
 The fetched data is then formatted in a consistent format that closely matches how it appears on DeltaBreed itself.
 
-You can use this library to greatly expedite data import. Instead of manually downloading and reading in a series of CSVs, just run:
+You can use this library to expedite data import when it comes time to analyze your phenotypic data and make selections. Rather than writing separate processes to import and standardize various CSVs, you can run a few short lines to retrieve all of your program's data:
 
 ```
 login_deltabreed()
-pheno <- get_observations()
+expts <- get_experiments()
+trait_defs <- get_variables()
+germplasm <- get_germplasm()
+obs <- get_observations()
 ```
 
 ## Table of Contents  
@@ -42,17 +45,17 @@ To retrieve data from your DeltaBreed instance, you will need two things:
 2. A temporary *Access Token* that authenticates your BrAPI calls for 24 hours.
 
 Both of these can be found on the **BrAPI** tab of your DeltaBreed instance:
+![A DeltaBreed instance opened to the BrAPI tab](https://github.com/Breeding-Insight/deltabreedquery/blob/main/.md_resources/brapi_tab_full.png)
 
 
-
-While you can simply run `login_deltabreed()` and enter the Base URL at the time of login, it's generally easiest to add the URL to the `login_deltabreed()` call at the start of your R script, since the URL for a given program will never change:
+While you can simply run `login_deltabreed()` and enter the Base URL at the time of login, you can also add the URL to the `login_deltabreed()` call at the start of your R script, since the URL for a given program will never change:
 
 ```
 login_deltabreed("https://rel-test.breedinginsight.net/v1/programs/07ffcd99-c0ff-4cbb-9b18-d05ae70d10fa")
 ```
 
 After you supply the URL, the terminal will prompt you for an Access Token. To generate this, hit the **Generate Access Token** button at right and copy-paste the token in into your terminal:
-
+![An access token generated on Deltabreed](https://github.com/Breeding-Insight/deltabreedquery/blob/main/.md_resources/access_token.png)
 
 You should then be able fetch data as described below.
 
