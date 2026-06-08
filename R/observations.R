@@ -34,6 +34,13 @@ get_observations <- function(page_size = 10000,
     execute_get_request() |>
     json_list_to_df()
 
+  # need to merge in Year from the seasons/ endpoint
+  expts <- get_experiments(verbose = FALSE,
+                           include_dbids = TRUE)
+  df_obsunits <- dplyr::left_join(df_obsunits,
+                                  expts[,c("studyDbId","Year")],
+                                  by = "studyDbId")
+
   mapping_obsunits <- define_mapping_obsunits()
   df_obsunits <- handle_subunits_obsdf(df_obsunits)
   df_obsunits <- brapi_to_db_names(df_obsunits,
@@ -72,6 +79,10 @@ get_observations <- function(page_size = 10000,
   # this is currently bugged as of June 2026, need to wait for a fix
   df_final <- sort_obsdf_rows(df_final)
   df_final <- sort_obsdf_columns(df_final, n_pheno_cols)
+
+  df_final <- type_obsdf_columns(df_final,
+                                 get_variables(verbose = FALSE),
+                                 n_pheno_cols = n_pheno_cols)
   df_final
 }
 
@@ -117,11 +128,11 @@ filter_observations <- function(year = NA,
 
   expts <- get_experiments(verbose = FALSE, include_dbids = TRUE)
   filt_expts <- expts |>
-    dplyr::filter(Year %in% year | is.na(year),
-                  Location %in% location | is.na(location),
-                  ExpName %in% exp_name | is.na(exp_name),
-                  EnvName %in% env_name | is.na(env_name),
-                  ExpType %in% exp_type | is.na(exp_type))
+    dplyr::filter(Year %in% year | all(is.na(year)),
+                  Location %in% location | all(is.na(location)),
+                  ExpName %in% exp_name | all(is.na(exp_name)),
+                  EnvName %in% env_name | all(is.na(env_name)),
+                  ExpType %in% exp_type | all(is.na(exp_type)))
 
   if (nrow(filt_expts) == 0){
     stop("No experiments found with the requested filters.")
@@ -144,7 +155,6 @@ filter_observations <- function(year = NA,
   obs_dfs <- list()
   for (i in 1:nrow(filt_expts)){
     dbid = filt_expts[i,"studyDbId"]
-    print(dbid)
     req_obsunits <- basereq_obsunits |>
       httr2::req_url_query(studyDbId = dbid)
     obsunit_dfs[[i]] <- execute_get_request(req_obsunits) |>
@@ -187,6 +197,9 @@ filter_observations <- function(year = NA,
 
   df_final <- sort_obsdf_rows(df_final)
   df_final <- sort_obsdf_columns(df_final, n_pheno_cols)
+  df_final <- type_obsdf_columns(df_final,
+                                 get_variables(verbose = FALSE),
+                                 n_pheno_cols = n_pheno_cols)
   df_final
 }
 
@@ -196,6 +209,7 @@ define_mapping_obsunits <- function(){
     "ExpName" = "trialName",
     "EnvName" = "studyName",
     "Location" = "locationName",
+    "Year" = "Year",
     "ExpUnit" = NA,
     "ExpUnitID" = NA,
     "SubUnit" = NA,
@@ -224,7 +238,8 @@ unpack_level_df <- function(df){
 }
 
 
-
+# observation units have a fairly complex handling
+# desired output is to have any observation units that have a parent labeled as sub-observation units instead
 handle_subunits_obsdf <- function(df){
   missing_colnames <- setdiff(
     c("observationUnitPosition.observationLevel.levelOrder",
@@ -272,7 +287,6 @@ handle_subunits_obsdf <- function(df){
       df[i,"ParentObsUnitDbId"] <- strsplit(vals[3], " [", fixed = TRUE)[[1]][1]
     }
   }
-
   # if we have sub-observations, pull the appropriate UnitIDs using the parent's DbId
   if (any(!is.na(df$ParentObsUnitDbId))){
     lookup <- df$ExpUnitID
@@ -282,24 +296,12 @@ handle_subunits_obsdf <- function(df){
                                    lookup[df$ParentObsUnitDbId],
                                    df$ExpUnitID)
   }
-
   df
-}
-
-
-typecheck_obsdf <- function(){
-  # TODO - add the type checking
-  # need to check variables endpoint to see what the data types should be
-  df_vars <- build_get_request(env$full_url,
-                               env$access_token,
-                               "variables") |>
-    execute_get_request() |>
-    json_list_to_df()
 }
 
 # sorting gets kind of complex so we can handle integer ExpUnitIDs and/or SubUnitIDs
 # for IDs like 1,2,[...],10,11,12, we want to sort that as an integer, not as a string
-# do it within each expt/envt (study level in BrAPI terms)
+# make this check separately within each expt/envt (study level in BrAPI terms)
 sort_obsdf_rows <- function(df){
   missing_colnames <- setdiff(
     c("SubUnitID", "ExpName", "EnvName","ExpUnitID","SubUnitID"),
@@ -349,6 +351,57 @@ sort_obsdf_columns <- function(df, n_pheno_cols){
   pheno_cols <- colnames(df)[trait_index]
   df[, trait_index] <- df[, sort(pheno_cols)]
   colnames(df)[trait_index] <- sort(pheno_cols)
+  df
+}
+
+# apply appropriate data types using the obs variable definitions in /variables endpoint
+# dtypes are present in the initial JSON but lost upon import to R
+type_obsdf_columns <- function(df, var_df, n_pheno_cols){
+  # Date class doesn't work on tibbles, so ensure it's a vanilla df first
+  # accessing first element here bc class(tibble) = c(tbl_df, tbl, data.frame)
+  if (class(df)[1] != "data.frame"){ df <- as.data.frame(df) }
+  # Row and Column may be non-integers, so don't convert them
+  for (col in c("GID","Rep","Block","Year")){
+    df[,col] = as.integer(df[,col])
+  }
+  first_var_col <- ncol(df) - n_pheno_cols + 1
+  for (j in first_var_col:ncol(df)){
+    var_name <- colnames(df)[j]
+    if (! var_name %in% var_df$Name){
+      stop("Column to be typed was not found in program observation variable names: ",
+           var_name)
+    }
+    dtype <- var_df |>
+      dplyr::filter(Name == var_name) |>
+      dplyr::pull(ScaleClass)
+    level_str <- var_df |>
+      dplyr::filter(Name == var_name) |>
+      dplyr::pull(Categories)
+    if (dtype == "Numerical"){
+      df[,j] <- as.numeric(df[,j])
+    } else if (dtype == "Text"){
+      df[,j] <- as.character(df[,j])
+    } else if (dtype == "Nominal"){
+      df[,j] <- factor(df[,j],
+                       levels = strsplit(level_str, "; *")[[1]])
+    } else if (dtype == "Ordinal"){
+      # we expect 1=Low; 2=Medium, etc, but that's not actually enforced
+      # people could use 3=High;2=Medium;1=Low, A=Low,B=Medium;C=High, etc
+      # can't fix everything, just use the ordering of levels as it occurs in the db itself
+      split_once <- strsplit(level_str, "; *")[[1]]
+      split_twice <- strsplit(split_once, "= *")
+      vals <- sapply(split_twice, function(x) x[1])
+      df[,j] <- factor(df[,j],
+                       levels = sapply(split_twice, function(x) x[1]))
+    } else if (dtype == "Date"){
+      df[,j] <- as.Date(df[,j],
+                        format = "%Y-%m-%d")
+    } else {
+      warning("Could not resolve the data type for the following column:\n",
+              var_name,
+              "\nData type: ", dtype, "\n")
+    }
+  }
   df
 }
 
