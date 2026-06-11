@@ -22,30 +22,41 @@ get_variables <- function(verbose = TRUE,
   # BrAPI nomenclature around trait endpoints is a bit confusing
   # lots of endpoints, but the one we need is mostly in /variables
   df <- build_get_request(env$full_url,
-                                  env$access_token,
-                                  "variables",
-                                  page_size = 1000) |>
+                          env$access_token,
+                          "variables",
+                          page_size = 1000) |>
     execute_get_request() |>
     json_list_to_df()
 
+  # filter / report
   if (verbose == TRUE) cat("Number of traits found: \t", nrow(df), "\n")
   if (!include_archived) {
     df <- df |> dplyr::filter(status != "archived")
   }
   if (verbose == TRUE) cat("Number of active traits found: \t", nrow(df), "\n")
 
+  if (nrow(df) == 0) return(df)
+
+  # scale.validValue.categories will only appear if there are any ordinal/nominal vars
+  # separate the handling of this column out on its own, simpler this way
+  if ("scale.validValues.categories" %in% colnames(df)){
+    df <- df |>
+      dplyr::mutate(Categories = sapply(scale.validValues.categories,
+                                        collapse_trait_categories))
+  } else {
+    df["scale.validValues.categories"] = NA
+  }
+
   df <- df |>
     dplyr::mutate(FullName = sapply(trait.synonyms,
-                                  function(x) tail(x,1)),
-                # only put values into Synonyms field if alternate names exist
-                # Name and FullName are technically synonyms, but this redundancy is not useful
-                Synonyms = sapply(trait.synonyms,
-                                  function(x) ifelse(length(x) > 2,
-                                                     paste0(x[2:(length(x)-1)], collapse = "; "),
-                                                     NA)),
-                Trait = paste(trait.entity, trait.attribute),
-                Categories = sapply(scale.validValues.categories,
-                                    collapse_trait_categories))
+                                    function(x) tail(x,1)),
+                  # only put values into Synonyms field if alternate names exist
+                  # Name and FullName are technically synonyms, but this redundancy is not useful
+                  Synonyms = sapply(trait.synonyms,
+                                    function(x) ifelse(length(x) > 2,
+                                                       paste0(x[2:(length(x)-1)], collapse = "; "),
+                                                       NA)),
+                  Trait = paste(trait.entity, trait.attribute))
 
   mapping_vars <- define_mapping_variables()
   df <- brapi_to_db_names(df, mapping_vars) |>

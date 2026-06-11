@@ -20,10 +20,10 @@ build_get_request <- function(url, token, endpoint, page_size = 10000){
         # temporary fix to get around DeltaBreed v1.3 bug
         # all requests with an empty response are returning 500 errors
         # should be returning empty responses with a 200 status
-      # } else if (httr2::resp_status(resp) == 500){
-      #   stop("Status code: 500",
-      #        "\nInternal Server Error. Please record the details of this request ",
-      #        "to the DeltaBreed team to figure out next steps.")
+        # } else if (httr2::resp_status(resp) == 500){
+        #   stop("Status code: 500",
+        #        "\nInternal Server Error. Please record the details of this request ",
+        #        "to the DeltaBreed team to figure out next steps.")
       }
       !(httr2::resp_status(resp) %in% c(200,500))
       # httr2::resp_status(resp) != 200
@@ -94,9 +94,10 @@ json_list_to_df <- function(json_list){
 # also handles the column ordering
 brapi_to_db_names <- function(data, mapping_vector){
   # mapping_vector has DeltaBreed terms as names, BrAPI terms as values
+  # NA values for terms that must be in the final df but do not have a 1:1 mapping to a BrAPI field
+  # those need to be handled elsewhere
   renamed <- data |>
     dplyr::rename(any_of(na.omit(mapping_vector)))
-  # Add any columns that happened to be missed
   missing_cols <- setdiff(names(mapping_vector),
                           colnames(renamed))
   for (col in missing_cols) {
