@@ -97,7 +97,7 @@ brapi_to_db_names <- function(data, mapping_vector){
   # NA values for terms that must be in the final df but do not have a 1:1 mapping to a BrAPI field
   # those need to be handled elsewhere
   renamed <- data |>
-    dplyr::rename(any_of(na.omit(mapping_vector)))
+    dplyr::rename(dplyr::any_of(stats::na.omit(mapping_vector)))
   missing_cols <- setdiff(names(mapping_vector),
                           colnames(renamed))
   for (col in missing_cols) {

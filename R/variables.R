@@ -31,7 +31,7 @@ get_variables <- function(verbose = TRUE,
   # filter / report
   if (verbose == TRUE) cat("Number of traits found: \t", nrow(df), "\n")
   if (!include_archived) {
-    df <- df |> dplyr::filter(status != "archived")
+    df <- df |> dplyr::filter(.data$status != "archived")
   }
   if (verbose == TRUE) cat("Number of active traits found: \t", nrow(df), "\n")
 
@@ -41,28 +41,33 @@ get_variables <- function(verbose = TRUE,
   # separate the handling of this column out on its own, simpler this way
   if ("scale.validValues.categories" %in% colnames(df)){
     df <- df |>
-      dplyr::mutate(Categories = sapply(scale.validValues.categories,
+      dplyr::mutate("Categories" = sapply(.data$scale.validValues.categories,
                                         collapse_trait_categories))
   } else {
     df["scale.validValues.categories"] = NA
   }
 
   df <- df |>
-    dplyr::mutate(FullName = sapply(trait.synonyms,
-                                    function(x) tail(x,1)),
+    dplyr::mutate("FullName" = sapply(.data$trait.synonyms,
+                                    function(x) utils::tail(x,1)),
                   # only put values into Synonyms field if alternate names exist
                   # Name and FullName are technically synonyms, but this redundancy is not useful
-                  Synonyms = sapply(trait.synonyms,
+                  Synonyms = sapply(.data$trait.synonyms,
                                     function(x) ifelse(length(x) > 2,
                                                        paste0(x[2:(length(x)-1)], collapse = "; "),
-                                                       NA)),
-                  Trait = paste(trait.entity, trait.attribute))
+                                                       NA)
+                                    ),
+                  Trait = paste(.data$trait.entity,
+                                .data$trait.attribute)
+                  )
 
   mapping_vars <- define_mapping_variables()
   df <- brapi_to_db_names(df, mapping_vars) |>
-    dplyr::arrange(Name) |>
+    dplyr::arrange("Name") |>
     # non-numerical trait Units are "" but really should be NA
-    dplyr::mutate(Units = dplyr::if_else(ScaleClass == "Numerical", Units, NA))
+    dplyr::mutate("Units" = dplyr::if_else(.data$ScaleClass == "Numerical",
+                                         .data$Units,
+                                         NA))
 
   df
 }

@@ -53,9 +53,9 @@ get_observations <- function(page_size = 10000,
                               page_size = page_size) |>
     execute_get_request() |>
     json_list_to_df() |>
-    dplyr::select(observationUnitDbId,
-                  observationVariableName,
-                  value) |>
+    dplyr::select("observationUnitDbId",
+                  "observationVariableName",
+                  "value") |>
     # obs response is long format (np x 1), need to be wide (n x p)
     tidyr::pivot_wider(names_from = "observationVariableName",
                        values_from = "value")
@@ -65,10 +65,10 @@ get_observations <- function(page_size = 10000,
 
   df_final <- dplyr::left_join(df_obsunits,
                                df_obs,
-                               by = dplyr::join_by(ObsUnitDbId == observationUnitDbId))
+                               by = dplyr::join_by("ObsUnitDbId" == "observationUnitDbId"))
   if (include_dbids == FALSE){
     df_final <- df_final |>
-      dplyr::select(!c(ObsUnitDbId, ParentObsUnitDbId))
+      dplyr::select(!c("ObsUnitDbId", "ParentObsUnitDbId"))
   }
   if (drop_empty_columns == TRUE){
     empty_cols <- apply(df_final, 2, function(x) all(is.na(x)))
@@ -106,7 +106,10 @@ get_observations <- function(page_size = 10000,
 #' @returns A data frame of observations using the supplied filters.
 #' @export
 #'
-#' @examples
+#' @examples \dontrun{
+#' filter_observations(year = 2025)
+#' filter_observations(year = c(2024, 2025), location = "Ithaca")
+#' }
 filter_observations <- function(year = NA,
                                 location = NA,
                                 exp_name = NA,
@@ -128,11 +131,11 @@ filter_observations <- function(year = NA,
 
   expts <- get_experiments(verbose = FALSE, include_dbids = TRUE)
   filt_expts <- expts |>
-    dplyr::filter(Year %in% year | all(is.na(year)),
-                  Location %in% location | all(is.na(location)),
-                  ExpName %in% exp_name | all(is.na(exp_name)),
-                  EnvName %in% env_name | all(is.na(env_name)),
-                  ExpType %in% exp_type | all(is.na(exp_type)))
+    dplyr::filter(.data$Year %in% year | all(is.na(year)),
+                  .data$Location %in% location | all(is.na(location)),
+                  .data$ExpName %in% exp_name | all(is.na(exp_name)),
+                  .data$.dataEnvName %in% env_name | all(is.na(env_name)),
+                  .data$ExpType %in% exp_type | all(is.na(exp_type)))
 
   if (nrow(filt_expts) == 0){
     stop("No experiments found with the requested filters.")
@@ -174,9 +177,9 @@ filter_observations <- function(year = NA,
                                    mapping_obsunits)
 
   df_obs <- df_obs |>
-    dplyr::select(observationUnitDbId,
-                  observationVariableName,
-                  value) |>
+    dplyr::select("observationUnitDbId",
+                  "observationVariableName",
+                  "value") |>
     tidyr::pivot_wider(names_from = "observationVariableName",
                        values_from = "value")
 
@@ -185,10 +188,10 @@ filter_observations <- function(year = NA,
 
   df_final <- dplyr::left_join(df_obsunits,
                                df_obs,
-                               by = dplyr::join_by(ObsUnitDbId == observationUnitDbId))
+                               by = dplyr::join_by("ObsUnitDbId" == "observationUnitDbId"))
   if (include_dbids == FALSE){
     df_final <- df_final |>
-      dplyr::select(!c(ObsUnitDbId, ParentObsUnitDbId))
+      dplyr::select(!c("ObsUnitDbId", "ParentObsUnitDbId"))
   }
   if (drop_empty_columns == TRUE){
     empty_cols <- apply(df_final, 2, function(x) all(is.na(x)))
@@ -291,7 +294,7 @@ handle_subunits_obsdf <- function(df){
   if (any(!is.na(df$ParentObsUnitDbId))){
     lookup <- df$ExpUnitID
     names(lookup) <- df$observationUnitDbId
-    lookup <- na.omit(lookup)
+    lookup <- stats::na.omit(lookup)
     df$ExpUnitID <- dplyr::if_else(is.na(df$ExpUnitID),
                                    lookup[df$ParentObsUnitDbId],
                                    df$ExpUnitID)
@@ -316,30 +319,30 @@ sort_obsdf_rows <- function(df){
   }
 
   df <- df |>
-    dplyr::mutate(has_subobs = !is.na(SubUnitID)) |>
-    dplyr::arrange(ExpName, has_subobs, EnvName) |>
-    dplyr::group_by(ExpName, has_subobs, EnvName) |>
-    # if all obs unit IDs or sub-obs unit IDs are integers for a given expt/envt
+    dplyr::mutate("has_subobs" = !is.na(.data$SubUnitID)) |>
+    dplyr::arrange("ExpName", "has_subobs", "EnvName") |>
+    dplyr::group_by("ExpName", "has_subobs", "EnvName") |>
+    # if ALL obs unit IDs or sub-obs unit IDs are integers for a given expt/envt
     # then treat them like integers
-    dplyr::mutate(expids_all_integers = all(!grepl("\\D", ExpUnitID)),
-                  subids_all_integers = all(!grepl("\\D", SubUnitID))) |>
-    dplyr::mutate(new_order_obs = ifelse(expids_all_integers,
-                                         rank(as.integer(ExpUnitID)),
-                                         rank(ExpUnitID)),
-                  new_order_sub = ifelse(subids_all_integers,
-                                         rank(as.integer(SubUnitID)),
-                                         rank(SubUnitID))) |>
-    dplyr::arrange(ExpName,
-                   !is.na(SubUnitID),
-                   EnvName,
-                   new_order_obs,
-                   new_order_sub) |>
+    dplyr::mutate("expids_all_integers" = all(!grepl("\\D", .data$ExpUnitID)),
+                  "subids_all_integers" = all(!grepl("\\D", .data$SubUnitID))) |>
+    dplyr::mutate("new_order_obs" = ifelse(.data$expids_all_integers,
+                                         rank(as.integer(.data$ExpUnitID)),
+                                         rank(.data$ExpUnitID)),
+                  "new_order_sub" = ifelse(.data$subids_all_integers,
+                                         rank(as.integer(.data$SubUnitID)),
+                                         rank(.data$SubUnitID))) |>
+    dplyr::arrange("ExpName",
+                   "SubUnitID",
+                   "EnvName",
+                   "new_order_obs",
+                   "new_order_sub") |>
     dplyr::ungroup() |>
-    dplyr::select(!c(expids_all_integers,
-                     subids_all_integers,
-                     new_order_obs,
-                     new_order_sub,
-                     has_subobs))
+    dplyr::select(!c("expids_all_integers",
+                     "subids_all_integers",
+                     "new_order_obs",
+                     "new_order_sub",
+                     "has_subobs"))
   df
 }
 
@@ -372,11 +375,11 @@ type_obsdf_columns <- function(df, var_df, n_pheno_cols){
            var_name)
     }
     dtype <- var_df |>
-      dplyr::filter(Name == var_name) |>
-      dplyr::pull(ScaleClass)
+      dplyr::filter("Name" == var_name) |>
+      dplyr::pull("ScaleClass")
     level_str <- var_df |>
-      dplyr::filter(Name == var_name) |>
-      dplyr::pull(Categories)
+      dplyr::filter("Name" == var_name) |>
+      dplyr::pull("Categories")
     if (dtype == "Numerical"){
       df[,j] <- as.numeric(df[,j])
     } else if (dtype == "Text"){

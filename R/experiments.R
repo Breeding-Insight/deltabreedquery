@@ -28,31 +28,31 @@ get_experiments <- function(verbose = TRUE,
                                  'trials') |>
     execute_get_request() |>
     json_list_to_df() |>
-    dplyr::select(trialName,
-                  additionalInfo.experimentType,
-                  additionalInfo.createdBy.userName,
-                  additionalInfo.createdDate,
-                  trialDbId)
+    dplyr::select("trialName",
+                  "additionalInfo.experimentType",
+                  "additionalInfo.createdBy.userName",
+                  "additionalInfo.createdDate",
+                  "trialDbId")
 
   df_studies <- build_get_request(env$full_url,
                                   env$access_token,
                                   'studies') |>
     execute_get_request() |>
     json_list_to_df() |>
-    dplyr::mutate(seasons = unlist(seasons)) |>
-    dplyr::select(studyName,
-                  locationName,
-                  studyDbId,
-                  trialDbId,
-                  seasons)
+    dplyr::mutate("seasons" = unlist(.data$seasons)) |>
+    dplyr::select("studyName",
+                  "locationName",
+                  "studyDbId",
+                  "trialDbId",
+                  "seasons")
 
   df_seasons <- build_get_request(env$full_url,
                                   env$access_token,
                                   'seasons') |>
     execute_get_request() |>
     json_list_to_df() |>
-    dplyr::select(seasonDbId,
-                  year)
+    dplyr::select("seasonDbId",
+                  "year")
   if (verbose == TRUE){
     cat("Number of Experiments found:  ", nrow(df_trials), "\n")
     cat("Number of Environments found: ", nrow(df_studies), "\n")
@@ -62,8 +62,8 @@ get_experiments <- function(verbose = TRUE,
   # will need to revisit this if we ever get multi-year environments
   df_studies <- dplyr::left_join(df_studies,
                                  df_seasons,
-                                 by = dplyr::join_by(seasons == seasonDbId)) |>
-    dplyr::select(!seasons)
+                                 by = dplyr::join_by("seasons" == "seasonDbId")) |>
+    dplyr::select(!c("seasons"))
 
   df_expts <- dplyr::full_join(df_trials,
                                df_studies,
@@ -76,9 +76,9 @@ get_experiments <- function(verbose = TRUE,
                         "trialDbId" = "trialDbId"))
   }
   df_expts <- brapi_to_db_names(df_expts, mapping_expt) |>
-    dplyr::arrange(Year,
-                   ExpName,
-                   EnvName)
+    dplyr::arrange("Year",
+                   "ExpName",
+                   "EnvName")
   df_expts
 }
 

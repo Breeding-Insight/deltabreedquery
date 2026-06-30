@@ -110,7 +110,7 @@ logout_deltabreed <- function() {
   invisible(TRUE)
 }
 
-#' @title Check
+#' @title Check whether authentication credentials exist
 #'
 #' @description Checks if a BrAPI Base URL and access token exist in the global
 #'   environment. Note that it does not specify whether the credentials are

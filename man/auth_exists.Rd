@@ -2,7 +2,7 @@
 % Please edit documentation in R/authentication.R
 \name{auth_exists}
 \alias{auth_exists}
-\title{Check}
+\title{Check whether authentication credentials exist}
 \usage{
 auth_exists()
 }

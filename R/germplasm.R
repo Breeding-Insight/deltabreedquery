@@ -1,6 +1,6 @@
 #' Get germplasm data
 #'
-#' @param page_size
+#' @param page_size Page size to use for the response.
 #'
 #' @description Retrieves all germplasm data from the current DeltaBreed instance.
 #' @return Germplasm data from the BrAPI API
@@ -26,7 +26,7 @@ get_germplasm <- function(page_size = 10000) {
 
   mapping_germplasm <- define_mapping_germplasm()
   renamed <- brapi_to_db_names(df, mapping_germplasm) |>
-    dplyr::arrange(as.integer(GID))
+    dplyr::arrange(as.integer("GID"))
   renamed
 }
 

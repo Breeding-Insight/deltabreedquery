@@ -4,12 +4,13 @@ Title: BrAPI Tools for Interacting with DeltaBreed Instances
 Version: 0.1.0
 Author: Tyr Wiesner-Hanks
 Maintainer: Tyr Wiesner-Hanks <twiesnerhanks@ufl.edu>
-Description: Tools to pull data from DeltaBreed instances via BrAPI
-License: Apache License 2.0
+Description: Tools to retrieve and format data from DeltaBreed instances via standardized BrAPI requests.
+License: Apache License 2.0 + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Suggests: 
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    vcr
 Config/testthat/edition: 3
 Depends: 
     R (>= 3.5)
