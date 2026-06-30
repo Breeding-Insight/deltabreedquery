@@ -10,7 +10,7 @@ This is an R package to pull data from Breeding Insight's [DeltaBreed](https://s
 
 The fetched data is then formatted in a consistent format that closely matches how it appears on DeltaBreed itself.
 
-You can use this library to expedite data import when it comes time to analyze your phenotypic data and make selections. Rather than writing separate processes to import and standardize various CSVs, you can run a few short lines to retrieve all of your program's data:
+You can use this library to expedite data import when it comes time to analyze your phenotypic data and make selections. Rather than writing separate processes to import and standardize various CSVs each year, you can run a few short lines to retrieve all of your program's data:
 
 ```
 login_deltabreed()
@@ -26,7 +26,7 @@ obs <- get_observations()
 2. [Authentication](#authentication)
 3. [Retrieving data](#retrieving-data)
 4. [Filtering observations](#filtering-observations)
-5. [Adjusting page size size](#page-size)
+5. [Adjusting page size](#page-size)
 
 
 ## Installation
@@ -61,13 +61,13 @@ After you supply the URL, the terminal will prompt you for an Access Token. To g
 <img src="https://github.com/Breeding-Insight/deltabreedquery/blob/main/data-raw/github_images/access_token.png" alt="An access token generated on Deltabreed" width="343" height="376" />
 
 
-You should then be able fetch data as described below.
+You should then be able fetch data as described below. 
 
 You can run `check_auth()` at any time to check whether you have valid credentials stored, which program you are currently "logged into," and when the current access token will expire.
 
 ## Retrieving data
 
-The library has four main functions to retrieve all of the data of a given type from your DeltaBreed instance:
+The library has four main functions to retrieve all data of a given type from your DeltaBreed instance:
 
 ```
 get_experiments()
