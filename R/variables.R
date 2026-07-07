@@ -17,12 +17,10 @@ get_variables <- function(verbose = TRUE,
     stop("No authentication credentials found. ",
          "Please run `login_deltabreed()` to authenticate first.")
   }
-  env <- get("deltabreedr_global", envir = .GlobalEnv)
-
   # BrAPI nomenclature around trait endpoints is a bit confusing
   # lots of endpoints, but the one we need is mostly in /variables
-  df <- build_get_request(env$full_url,
-                          env$access_token,
+  df <- build_get_request(.dbc_env$full_url,
+                          .dbc_env$access_token,
                           "variables",
                           page_size = 1000) |>
     execute_get_request() |>

@@ -5,8 +5,8 @@
 #' how the data appears on DeltaBreed itself.
 #'
 #' @param page_size Page size to use when making the request. Larger page size can make requests faster but may cause errors.
-#' @param verbose Whether to print short messages showing the number of records found
-#' @param drop_empty_columns Whether to drop columns that contain no data across the entire data frame.
+#' @param verbose Whether to print short messages showing the number of records found.
+#' @param drop_empty_columns Whether to drop all empty columns (including metadata columns) from the returned data frame
 #' @param include_dbids Whether to include the DbIds of the observation units, mostly useful for debugging.
 #'
 #' @return A data frame of observations (phenotypes), formatted in DeltaBreed style.
@@ -24,11 +24,9 @@ get_observations <- function(page_size = 10000,
     stop("No authentication credentials found.",
          "Please run `login_deltabreed()` to authenticate first.")
   }
-  env <- get("deltabreedr_global", envir = .GlobalEnv)
-
   if (verbose) cat("Requesting observation units...\n")
-  df_obsunits <- build_get_request(env$full_url,
-                                   env$access_token,
+  df_obsunits <- build_get_request(.dbc_env$full_url,
+                                   .dbc_env$access_token,
                                    "observationunits",
                                    page_size = page_size) |>
     execute_get_request() |>
@@ -47,8 +45,8 @@ get_observations <- function(page_size = 10000,
                                    mapping_obsunits)
 
   if (verbose) cat("Requesting phenotype values...\n")
-  df_obs <- build_get_request(env$full_url,
-                              env$access_token,
+  df_obs <- build_get_request(.dbc_env$full_url,
+                              .dbc_env$access_token,
                               "observations",
                               page_size = page_size) |>
     execute_get_request() |>
@@ -101,6 +99,8 @@ get_observations <- function(page_size = 10000,
 #' @param env_name An environment name or vector of names.
 #' @param exp_type An experiment type or vector of types.
 #' @param page_size Page size to use for the request. Larger page sizes can decrease total time needed, but may also throw errors.
+#' @param drop_empty_columns Whether to drop all empty columns (including metadata columns) from the returned data frame
+#' @param include_dbids Whether to include the DbIds of the observation units, mostly useful for debugging.
 #' @param verbose Whether to print short messages about the number of records found.
 #'
 #' @returns A data frame of observations using the supplied filters.
@@ -115,7 +115,7 @@ filter_observations <- function(year = NA,
                                 exp_name = NA,
                                 env_name = NA,
                                 exp_type = NA,
-                                page_size = 5000,
+                                page_size = 10000,
                                 drop_empty_columns = FALSE,
                                 include_dbids = FALSE,
                                 verbose = TRUE){
@@ -127,8 +127,6 @@ filter_observations <- function(year = NA,
     stop("No authentication credentials found. ",
          "Please run `login_deltabreed()` to authenticate first.")
   }
-  env <- get("deltabreedr_global", envir = .GlobalEnv)
-
   expts <- get_experiments(verbose = FALSE, include_dbids = TRUE)
   filt_expts <- expts |>
     dplyr::filter(.data$Year %in% year | all(is.na(year)),
@@ -145,12 +143,12 @@ filter_observations <- function(year = NA,
   }
 
   # base requests we will reuse for each envt (study) in the filter
-  basereq_obs   <- build_get_request(env$full_url,
-                                     env$access_token,
+  basereq_obs   <- build_get_request(.dbc_env$full_url,
+                                     .dbc_env$access_token,
                                      'observations',
                                      page_size = page_size)
-  basereq_obsunits <- build_get_request(env$full_url,
-                                        env$access_token,
+  basereq_obsunits <- build_get_request(.dbc_env$full_url,
+                                        .dbc_env$access_token,
                                         'observationunits',
                                         page_size = page_size)
 

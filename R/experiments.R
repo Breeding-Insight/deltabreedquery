@@ -14,17 +14,16 @@
 #' login_deltabreed()
 #' get_experiments()
 #' }
+#' @importFrom rlang .data
 get_experiments <- function(verbose = TRUE,
                             include_dbids = FALSE) {
   if (!auth_exists()) {
     stop("No authentication credentials found. ",
          "Please run `login_deltabreed()` to authenticate first.")
   }
-  env <- get("deltabreedr_global", envir = .GlobalEnv)
-
   # Need to pull from trials, studies, and seasons endpoints
-  df_trials <- build_get_request(env$full_url,
-                                 env$access_token,
+  df_trials <- build_get_request(.dbc_env$full_url,
+                                 .dbc_env$access_token,
                                  'trials') |>
     execute_get_request() |>
     json_list_to_df() |>
@@ -34,8 +33,8 @@ get_experiments <- function(verbose = TRUE,
                   "additionalInfo.createdDate",
                   "trialDbId")
 
-  df_studies <- build_get_request(env$full_url,
-                                  env$access_token,
+  df_studies <- build_get_request(.dbc_env$full_url,
+                                  .dbc_env$access_token,
                                   'studies') |>
     execute_get_request() |>
     json_list_to_df() |>
@@ -46,8 +45,8 @@ get_experiments <- function(verbose = TRUE,
                   "trialDbId",
                   "seasons")
 
-  df_seasons <- build_get_request(env$full_url,
-                                  env$access_token,
+  df_seasons <- build_get_request(.dbc_env$full_url,
+                                  .dbc_env$access_token,
                                   'seasons') |>
     execute_get_request() |>
     json_list_to_df() |>

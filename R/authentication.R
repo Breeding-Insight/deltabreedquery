@@ -1,3 +1,6 @@
+# Private package-level environment for storing session credentials
+.dbc_env <- new.env(parent = emptyenv())
+
 #' Log in to a DeltaBreed instance
 #'
 #' This function "logs in" to a DeltaBreed instance using the BrAPI Base
@@ -67,15 +70,11 @@ login_deltabreed <- function(base_url = NULL, access_token = NULL) {
     cat("Program name: ",
         test_json$result$data$programName, "\n")
 
-    # if authentication is successful, store credentials in global environment
-    # Initialize global environment if it doesn't exist
-    if (!exists("deltabreedr_global", envir = .GlobalEnv)) {
-      assign("deltabreedr_global", new.env(), envir = .GlobalEnv)
-    }
-    deltabreedr_global$base_url <- base_url
-    deltabreedr_global$full_url <- full_url
-    deltabreedr_global$access_token <- access_token
-    deltabreedr_global$login_timestamp <- Sys.time()
+    # if authentication is successful, store credentials in package environment
+    .dbc_env$base_url        <- base_url
+    .dbc_env$full_url        <- full_url
+    .dbc_env$access_token    <- access_token
+    .dbc_env$login_timestamp <- Sys.time()
   } else if (httr2::resp_status(test_resp) == 401) {
     stop("401: Access Token not accepted. ",
          "Please double-check the BrAPI Base URL and ",
@@ -100,13 +99,12 @@ login_deltabreed <- function(base_url = NULL, access_token = NULL) {
 #' @return No return value, called for side effects (clearing credentials)
 #' @export
 logout_deltabreed <- function() {
-  if (exists("deltabreedr_global", envir = .GlobalEnv)) {
-    env <- get("deltabreedr_global", envir = .GlobalEnv)
-    if (exists("base_url", envir = env)) rm("base_url", envir = env)
-    if (exists("access_token", envir = env)) rm("access_token", envir = env)
-  }
+  if (exists("base_url", envir = .dbc_env))     rm("base_url",        envir = .dbc_env)
+  if (exists("full_url", envir = .dbc_env))     rm("full_url",        envir = .dbc_env)
+  if (exists("access_token", envir = .dbc_env)) rm("access_token",    envir = .dbc_env)
+  if (exists("login_timestamp", envir = .dbc_env)) rm("login_timestamp", envir = .dbc_env)
 
-  cat("✓ Credentials cleared successfully.\n")
+  cat("\u2713 Credentials cleared successfully.\n")
   invisible(TRUE)
 }
 
@@ -119,15 +117,8 @@ logout_deltabreed <- function() {
 #' @return Logical value indicating if base_url and access_token exist in the
 #'   global env.
 auth_exists <- function() {
-  if (!exists("deltabreedr_global", envir = .GlobalEnv)) {
-    return(FALSE)
-  }
-  env <- get("deltabreedr_global", envir = .GlobalEnv)
-  if (!exists("full_url", envir = env) ||
-      !exists("access_token", envir = env)) {
-    return(FALSE)
-  }
-  return(TRUE)
+  exists("full_url", envir = .dbc_env) &&
+    exists("access_token", envir = .dbc_env)
 }
 
 #' Validate BrAPI authentication credentials
@@ -143,13 +134,12 @@ check_auth <- function() {
   if (!auth_exists()){
     cat("✗ You do not currently have any DeltaBreed authentication credentials",
         "stored.\n",
-        "Please run login_deltabreed() to authenticate.\n")
+        " Please run login_deltabreed() to authenticate.\n")
   } else {
-    cat("✓ You have DeltaBreed authentication credentials stored.\n")
-    env <- get("deltabreedr_global", envir = .GlobalEnv)
+    cat("\u2713 You have DeltaBreed authentication credentials stored.\n")
     # Check for login timestamp and print remaining time (assuming 24h expiry)
-    if (exists("login_timestamp", envir = env)) {
-      login_time <- env$login_timestamp
+    if (exists("login_timestamp", envir = .dbc_env)) {
+      login_time <- .dbc_env$login_timestamp
       expiry_time <- login_time + 24 * 60 * 60
       now <- Sys.time()
       remaining <- as.numeric(difftime(expiry_time, now, units = "secs"))
@@ -164,9 +154,9 @@ check_auth <- function() {
     }
 
     # Test authentication by making a call to endpoint
-    test_resp <- httr2::request(env$full_url) |>
+    test_resp <- httr2::request(.dbc_env$full_url) |>
       httr2::req_url_path_append('programs') |>
-      httr2::req_auth_bearer_token(env$access_token) |>
+      httr2::req_auth_bearer_token(.dbc_env$access_token) |>
       httr2::req_perform()
 
     if (httr2::resp_status(test_resp) == 200) {

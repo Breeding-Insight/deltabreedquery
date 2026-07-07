@@ -15,10 +15,8 @@ get_germplasm <- function(page_size = 10000) {
     stop("No authentication credentials found. ",
          "Please run `login_deltabreed()` to authenticate first.")
   }
-  env <- get("deltabreedr_global", envir = .GlobalEnv)
-
-  df <- build_get_request(env$full_url,
-                            env$access_token,
+  df <- build_get_request(.dbc_env$full_url,
+                            .dbc_env$access_token,
                             "germplasm",
                             page_size = page_size) |>
     execute_get_request() |>
