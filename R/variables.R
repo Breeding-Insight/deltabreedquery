@@ -26,14 +26,14 @@ get_variables <- function(verbose = TRUE,
     execute_get_request() |>
     json_list_to_df()
 
+  if (nrow(df) == 0) return(df)
+
   # filter / report
   if (verbose == TRUE) cat("Number of traits found: \t", nrow(df), "\n")
   if (!include_archived) {
     df <- df |> dplyr::filter(.data$status != "archived")
   }
   if (verbose == TRUE) cat("Number of active traits found: \t", nrow(df), "\n")
-
-  if (nrow(df) == 0) return(df)
 
   # scale.validValue.categories will only appear if there are any ordinal/nominal vars
   # separate the handling of this column out on its own, simpler this way
@@ -61,7 +61,7 @@ get_variables <- function(verbose = TRUE,
 
   mapping_vars <- define_mapping_variables()
   df <- brapi_to_db_names(df, mapping_vars) |>
-    dplyr::arrange("Name") |>
+    dplyr::arrange(.data$Name) |>
     # non-numerical trait Units are "" but really should be NA
     dplyr::mutate("Units" = dplyr::if_else(.data$ScaleClass == "Numerical",
                                          .data$Units,
@@ -71,7 +71,7 @@ get_variables <- function(verbose = TRUE,
 }
 
 # Format the Categories field for categorical data
-# Using
+# need to convert df to a single string, semicolon+space delimited
 collapse_trait_categories <- function(df) {
   if (is.null(df)){
     out_str = ""

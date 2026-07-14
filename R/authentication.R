@@ -18,17 +18,18 @@
 #'   in the BrAPI Information pane.
 #' @param access_token A valid Access Token, retrieved from the DeltaBreed
 #' user interface.
+#' @param verbose Whether to print out success messages.
 #' @export
 #' @examples \dontrun{
 #' login_deltabreed()
 #' }
-login_deltabreed <- function(base_url = NULL, access_token = NULL) {
-  cat("=== DeltaBreed Login and Authentication ===\n")
+login_deltabreed <- function(base_url = NULL, access_token = NULL, verbose = TRUE) {
   # Verify that the user has internet access
   if (!httr2::is_online()){
     stop("No internet connection detected. Please check your connection before \
          proceeding.")
   }
+  if (verbose) cat("=== DeltaBreed Login and Authentication ===\n")
   # Prompt for Base URL if not supplied
   if (is.null(base_url)) {
     cat("Please enter the BrAPI Base URL.\n",
@@ -56,19 +57,21 @@ login_deltabreed <- function(base_url = NULL, access_token = NULL) {
   }
 
   # Test authentication by making a test API call
-  cat("\nTesting authentication...\n")
+  if (verbose) cat("\nTesting authentication...\n")
   test_resp <- httr2::request(full_url) |>
     httr2::req_url_path_append('programs') |>
     httr2::req_auth_bearer_token(access_token) |>
     httr2::req_perform()
 
   if (httr2::resp_status(test_resp) == 200) {
-    cat("URL and Access Token validated!\n")
     test_json <- test_resp |>
       httr2::resp_body_json(simplifyVector = TRUE,
                             flatten = TRUE)
-    cat("Program name: ",
-        test_json$result$data$programName, "\n")
+    if (verbose) {
+      cat("URL and Access Token validated!\n")
+      cat("Program name: ",
+          test_json$result$data$programName, "\n")
+    }
 
     # if authentication is successful, store credentials in package environment
     .dbc_env$base_url        <- base_url
@@ -132,7 +135,7 @@ auth_exists <- function() {
 #' @export
 check_auth <- function() {
   if (!auth_exists()){
-    cat("✗ You do not currently have any DeltaBreed authentication credentials",
+    cat("\u2718 You do not currently have any DeltaBreed authentication credentials",
         "stored.\n",
         " Please run login_deltabreed() to authenticate.\n")
   } else {
@@ -148,7 +151,7 @@ check_auth <- function() {
         minutes <- floor((remaining %% 3600) / 60)
         cat(sprintf("  Access token expires in %d hours %d minutes.\n", hours, minutes))
       } else {
-        cat("✗ Access Token has expired.\n",
+        cat("\u2718 Access Token has expired.\n",
             "  Please run login_deltabreed() to re-authenticate.\n" )
       }
     }
@@ -160,7 +163,7 @@ check_auth <- function() {
       httr2::req_perform()
 
     if (httr2::resp_status(test_resp) == 200) {
-      cat("\n✓ URL and Access Token successfully validated!\n")
+      cat("\n\u2713 URL and Access Token successfully validated!\n")
       test_json <- test_resp |>
         httr2::resp_body_json(simplifyVector = TRUE,
                               flatten = TRUE)
@@ -168,7 +171,7 @@ check_auth <- function() {
           test_json$result$data$programName, "\n")
 
     } else {
-      cat("\n✗ The test call to the BrAPI server has failed.\n",
+      cat("\n\u2718 The test call to the BrAPI server has failed.\n",
           "  Please run login_deltabreed() to re-authenticate.\n" )
     }
   }

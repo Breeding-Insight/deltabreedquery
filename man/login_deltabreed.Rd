@@ -4,7 +4,7 @@
 \alias{login_deltabreed}
 \title{Log in to a DeltaBreed instance}
 \usage{
-login_deltabreed(base_url = NULL, access_token = NULL)
+login_deltabreed(base_url = NULL, access_token = NULL, verbose = TRUE)
 }
 \arguments{
 \item{base_url}{The BrAPI Base URL, found on the BrAPI tab of DeltaBreed
@@ -12,6 +12,8 @@ in the BrAPI Information pane.}
 
 \item{access_token}{A valid Access Token, retrieved from the DeltaBreed
 user interface.}
+
+\item{verbose}{Whether to print out success messages.}
 }
 \value{
 No return value, called for side effects (storing credentials)

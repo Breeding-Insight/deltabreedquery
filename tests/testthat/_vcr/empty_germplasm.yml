@@ -1,0 +1,31 @@
+http_interactions:
+- request:
+    method: GET
+    uri: https://rel-test.breedinginsight.net/v1/programs/828857d9-f82e-4ede-9ede-621b1440b191/brapi/v2/programs
+  response:
+    status: 200
+    headers:
+      Server: nginx/1.20.1
+      Date: Tue, 07 Jul 2026 18:53:14 GMT
+      Content-Type: application/json
+      Content-Length: '243'
+      Connection: keep-alive
+    body:
+      string: '{"metadata":{"pagination":{"pageSize":1,"totalCount":1,"totalPages":1,"currentPage":0}},"result":{"data":[{"programDbId":"828857d9-f82e-4ede-9ede-621b1440b191","abbreviation":"EMPTY","commonCropName":"Alfalfa","programName":"Empty-program"}]}}'
+  recorded_at: 2026-07-07 18:53:14
+- request:
+    method: GET
+    uri: https://rel-test.breedinginsight.net/v1/programs/828857d9-f82e-4ede-9ede-621b1440b191/brapi/v2/germplasm?pageSize=10000
+  response:
+    status: 200
+    headers:
+      Server: nginx/1.20.1
+      Date: Tue, 07 Jul 2026 18:53:14 GMT
+      Content-Type: application/json
+      Content-Length: '176'
+      Connection: keep-alive
+    body:
+      string: '{"metadata":{"pagination":{"totalCount":0,"pageSize":10000,"totalPages":0,"currentPage":0},"status":[{"messageType":"INFO","message":"Query
+        Successful"}]},"result":{"data":[]}}'
+  recorded_at: 2026-07-07 18:53:14
+recorded_with: VCR-vcr/2.1.0

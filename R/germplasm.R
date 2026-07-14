@@ -22,12 +22,16 @@ get_germplasm <- function(page_size = 10000) {
     execute_get_request() |>
     json_list_to_df()
 
+  if (nrow(df) == 0){
+    return(df)
+  }
+
   mapping_germplasm <- define_mapping_germplasm()
   renamed <- brapi_to_db_names(df, mapping_germplasm) |>
-    dplyr::arrange(as.integer("GID"))
+    dplyr::mutate("GID" = as.integer(.data$GID)) |>
+    dplyr::arrange(.data$GID)
   renamed
 }
-
 
 # define the mappings here, instead of in a .CSV accompanying the package
 # ended up being easier to track and manage
@@ -46,4 +50,3 @@ define_mapping_germplasm <- function(){
   )
   mapping
 }
-

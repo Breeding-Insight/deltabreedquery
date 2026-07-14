@@ -14,11 +14,11 @@ get_observations(
 \arguments{
 \item{page_size}{Page size to use when making the request. Larger page size can make requests faster but may cause errors.}
 
-\item{drop_empty_columns}{Whether to drop columns that contain no data across the entire data frame.}
+\item{drop_empty_columns}{Whether to drop all empty columns (including metadata columns) from the returned data frame}
 
 \item{include_dbids}{Whether to include the DbIds of the observation units, mostly useful for debugging.}
 
-\item{verbose}{Whether to print short messages showing the number of records found}
+\item{verbose}{Whether to print short messages showing the number of records found.}
 }
 \value{
 A data frame of observations (phenotypes), formatted in DeltaBreed style.

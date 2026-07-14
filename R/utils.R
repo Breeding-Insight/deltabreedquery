@@ -14,7 +14,7 @@ build_get_request <- function(url, token, endpoint, page_size = 10000){
              " and try regenerating the Access Token.")
       } else if (httr2::resp_status(resp) %in% c(404, 405)) {
         stop("Status code: ", httr2::resp_status(resp),
-             "\nSpecified BrAPI endpoint not found." ,
+             "\nSpecified BrAPI endpoint not found:" , endpoint, "\n",
              " Please double-check that your BrAPI URL is correct.",
              " If this issue persists, please contact the package maintainers.")
         # temporary fix to get around DeltaBreed v1.3 bug
@@ -39,9 +39,10 @@ execute_get_request <- function(req, verbose = FALSE){
     httr2::req_perform()
 
   # temp fix to get around DeltaBreed 1.3 bug noted above
+  #
   if (response$status_code == 500){
-    json <- list(result = list(data = data.frame()))
-    return(json)
+    json_list <- list(result = list(data = data.frame()))
+    return(json_list)
   }
   json <- response |>
     httr2::resp_body_json(simplifyVector = TRUE,
@@ -53,7 +54,9 @@ execute_get_request <- function(req, verbose = FALSE){
   n_pages_response <- json$metadata$pagination$totalPages
 
   if (n_records == 0) {
-    stop("API call was successful but 0 records were found.")
+    cat("API call was successful but no records were found in the target endpoint.\n")
+    json_list <- list(result = list(data = data.frame()))
+    return(json_list)
   }
   if (verbose) cat("Number of records found: ", n_records, "\n")
   responses <- list(response)
@@ -66,10 +69,10 @@ execute_get_request <- function(req, verbose = FALSE){
                                                                          start = 0),
                                               max_reqs = n_pages_response)
   }
-  json <- lapply(responses, function(x) httr2::resp_body_json(x,
+  json_list <- lapply(responses, function(x) httr2::resp_body_json(x,
                                                               simplifyVector = TRUE,
                                                               flatten = TRUE))
-  json
+  json_list
 }
 
 # operates on a single page of JSON response

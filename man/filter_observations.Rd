@@ -10,7 +10,7 @@ filter_observations(
   exp_name = NA,
   env_name = NA,
   exp_type = NA,
-  page_size = 5000,
+  page_size = 10000,
   drop_empty_columns = FALSE,
   include_dbids = FALSE,
   verbose = TRUE
@@ -28,6 +28,10 @@ filter_observations(
 \item{exp_type}{An experiment type or vector of types.}
 
 \item{page_size}{Page size to use for the request. Larger page sizes can decrease total time needed, but may also throw errors.}
+
+\item{drop_empty_columns}{Whether to drop all empty columns (including metadata columns) from the returned data frame}
+
+\item{include_dbids}{Whether to include the DbIds of the observation units, mostly useful for debugging.}
 
 \item{verbose}{Whether to print short messages about the number of records found.}
 }
