@@ -35,7 +35,7 @@ get_observations <- function(page_size = 10000,
   # I don't think it should be possible for a program to have have valid expts but no obs units defined
   # but in case it does happen, warn and return the empty df
   if (nrow(df_obsunits) == 0){
-    warning("Experiments exist in the target program, but no observation units were found")
+    if (verbose == TRUE) cat("Experiments exist in the target program, but no observation units were found.")
     return(df_obsunits)
   }
 
@@ -151,7 +151,7 @@ filter_observations <- function(year = NA,
                   .data$ExpType %in% exp_type | all(is.na(exp_type)))
 
   if (nrow(filt_expts) == 0){
-    warning("No experiments found with the requested filters.")
+    if (verbose == TRUE) cat("No experiments found with the requested filters.\n")
     return()
   }
   if (verbose) cat(nrow(filt_expts), "matching environment(s) found.\n")
@@ -193,7 +193,7 @@ filter_observations <- function(year = NA,
   # I don't think it should be possible for a program to have have valid expts but no obs units defined
   # but in case it does happen, warn and return the empty df
   if (nrow(df_obsunits) == 0){
-    warning("Experiments exist in the target program, but no observation units were found")
+    if (verbose == TRUE) cat("Experiments exist in the target program, but no observation units were found\n")
     return(df_obsunits)
   }
 

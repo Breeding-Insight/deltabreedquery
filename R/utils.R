@@ -54,11 +54,11 @@ execute_get_request <- function(req, verbose = FALSE){
   n_pages_response <- json$metadata$pagination$totalPages
 
   if (n_records == 0) {
-    cat("API call was successful but no records were found in the target endpoint.\n")
+    if (verbose == TRUE) cat("API call was successful but no records were found in the target endpoint.\n")
     json_list <- list(result = list(data = data.frame()))
     return(json_list)
   }
-  if (verbose) cat("Number of records found: ", n_records, "\n")
+  if (verbose == TRUE) cat("Number of records found: ", n_records, "\n")
   responses <- list(response)
 
   # iterate through pages if needed, starting at page 0

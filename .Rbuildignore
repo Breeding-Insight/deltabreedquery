@@ -1,3 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^data-raw$
+^sandbox$
+.Rhistory
+tests/testthat/_vcr
+data-raw

@@ -1,10 +1,14 @@
 Package: deltabreedquery
 Type: Package
-Title: Fast, Simple BrAPI Tools for Retrieving Data from DeltaBreed Instances
-Version: 0.1.0
-Author: Tyr Wiesner-Hanks
+Title: Fast, Simple API Tools for Retrieving Data from 'DeltaBreed'
+Version: 1.0.0
+Authors@R: c(
+    person("Tyr", "Wiesner-Hanks",
+    email = "twiesnerhanks@ufl.edu", role = c("aut","cre"),
+    comment = c(ORCID = "0000-0002-3280-5749"))
+    )
 Maintainer: Tyr Wiesner-Hanks <twiesnerhanks@ufl.edu>
-Description: Tools to retrieve and format data from DeltaBreed instances via standardized BrAPI requests.
+Description: Tools to retrieve data from the 'DeltaBreed' breeding data management platform via 'BrAPI', an open-source breeding data API (<https://brapi.org/specification>). Data retrieval functions construct and execute valid requests, packaging the response into an R-friendly format that resembles how the data appears on the 'DeltaBreed' web interface.
 License: Apache License 2.0
 Encoding: UTF-8
 LazyData: true
