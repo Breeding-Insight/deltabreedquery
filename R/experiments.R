@@ -5,15 +5,16 @@
 #' recorded yet.
 #'
 #' @param verbose Whether to print out the number of experiments/environments found.
-#' @param include_dbids Whether to include the lengthy unique ID for each experiment/environment. Typically used for debugging or merging data from other sources.
+#' @param include_dbids Whether to include the lengthy unique ID for each experiment/environment.
+#' Typically used for debugging or merging data from other sources.
 #'
 #' @return Data frame of experiment/environment metadata.
 #' @export
 #' @examples
-#' \dontrun{
-#' login_deltabreed()
-#' get_experiments()
-#' }
+#' login_deltabreed("example", verbose = FALSE)
+#'
+#' expt <- get_experiments()
+#' expt
 #' @importFrom rlang .data
 get_experiments <- function(verbose = TRUE,
                             include_dbids = FALSE) {
@@ -22,11 +23,29 @@ get_experiments <- function(verbose = TRUE,
          "Please run `login_deltabreed()` to authenticate first.")
   }
   # Need to pull from trials, studies, and seasons endpoints
-  df_trials <- build_get_request(.dbc_env$full_url,
-                                 .dbc_env$access_token,
-                                 'trials') |>
-    execute_get_request() |>
-    json_list_to_df()
+  if (is_example_mode()) {
+    df_trials <- load_example_json("trials.json") |> json_list_to_df()
+    df_studies <- load_example_json("studies.json") |> json_list_to_df()
+    df_seasons <- load_example_json("seasons.json") |> json_list_to_df()
+  } else {
+    df_trials <- build_get_request(.dbc_env$full_url,
+                                   .dbc_env$access_token,
+                                   'trials') |>
+      execute_get_request() |>
+      json_list_to_df()
+
+    df_studies <- build_get_request(.dbc_env$full_url,
+                                    .dbc_env$access_token,
+                                    'studies') |>
+      execute_get_request() |>
+      json_list_to_df()
+
+    df_seasons <- build_get_request(.dbc_env$full_url,
+                                    .dbc_env$access_token,
+                                    'seasons') |>
+      execute_get_request() |>
+      json_list_to_df()
+  }
 
   if (nrow(df_trials) == 0){
     return(df_trials)
@@ -39,11 +58,7 @@ get_experiments <- function(verbose = TRUE,
                   "additionalInfo.createdDate",
                   "trialDbId")
 
-  df_studies <- build_get_request(.dbc_env$full_url,
-                                  .dbc_env$access_token,
-                                  'studies') |>
-    execute_get_request() |>
-    json_list_to_df() |>
+  df_studies <- df_studies |>
     dplyr::mutate("seasons" = unlist(.data$seasons)) |>
     dplyr::select("studyName",
                   "locationName",
@@ -51,16 +66,13 @@ get_experiments <- function(verbose = TRUE,
                   "trialDbId",
                   "seasons")
 
-  df_seasons <- build_get_request(.dbc_env$full_url,
-                                  .dbc_env$access_token,
-                                  'seasons') |>
-    execute_get_request() |>
-    json_list_to_df() |>
+  df_seasons <- df_seasons |>
     dplyr::select("seasonDbId",
                   "year")
+
   if (verbose == TRUE){
-    cat("Number of Experiments found:  ", nrow(df_trials), "\n")
-    cat("Number of Environments found: ", nrow(df_studies), "\n")
+    message("Number of Experiments found:  ", nrow(df_trials))
+    message("Number of Environments found: ", nrow(df_studies))
   }
 
   # merge in just the seasonDbId and year(s)

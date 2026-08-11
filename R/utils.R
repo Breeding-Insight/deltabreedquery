@@ -54,11 +54,11 @@ execute_get_request <- function(req, verbose = FALSE){
   n_pages_response <- json$metadata$pagination$totalPages
 
   if (n_records == 0) {
-    if (verbose == TRUE) cat("API call was successful but no records were found in the target endpoint.\n")
+    if (verbose == TRUE) message("API call was successful but no records were found in the target endpoint.\n")
     json_list <- list(result = list(data = data.frame()))
     return(json_list)
   }
-  if (verbose == TRUE) cat("Number of records found: ", n_records, "\n")
+  if (verbose == TRUE) message("Number of records found: ", n_records, "\n")
   responses <- list(response)
 
   # iterate through pages if needed, starting at page 0
@@ -109,4 +109,12 @@ brapi_to_db_names <- function(data, mapping_vector){
   renamed <- renamed |>
     dplyr::select(names(mapping_vector))
   renamed
+}
+
+# Load a bundled example JSON file from inst/ and return in json_list format
+load_example_json <- function(filename) {
+  path <- system.file(filename, package = "deltabreedquery")
+  if (nchar(path) == 0) stop("Example data file not found: ", filename)
+  json <- jsonlite::fromJSON(path, simplifyVector = TRUE, flatten = TRUE)
+  list(json)
 }

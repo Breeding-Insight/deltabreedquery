@@ -2,24 +2,27 @@
 % Please edit documentation in R/variables.R
 \name{get_variables}
 \alias{get_variables}
-\title{Get observation variables (trait definitions) from a DeltaBreed instance.}
+\title{Retrieve observation variables (trait definitions) from a DeltaBreed instance.}
 \usage{
 get_variables(verbose = TRUE, include_archived = FALSE)
 }
 \arguments{
 \item{verbose}{Whether to print a short message about the number of traits found.}
 
-\item{include_archived}{Should the output include archived (non-active) traits?}
+\item{include_archived}{Whether the output should include archived (non-active).}
 }
 \value{
-Data frame of trait information drawn from BrAPI `/variables`
+Data frame of trait definitions drawn from BrAPI `/variables`
 endpoint.
 }
 \description{
-Retrieves trait data from a DeltaBreed program via BrAPI.
+Retrieves trait data from a DeltaBreed program via BrAPI,
+converting it into a data frame that mimics the appearance of the Ontology
+table in DeltaBreed itself.
 }
 \examples{
-\dontrun{
-get_variables()
-}
+login_deltabreed("example", verbose = FALSE)
+
+vars <- get_variables()
+vars
 }

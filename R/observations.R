@@ -1,21 +1,29 @@
 #' Retrieve all observation data
 #'
-#' Retrieves all observation and sub-observation data from a DeltaBreed
-#' instance via BrAPI call, converting it into a data frame that resembles
-#' how the data appears on DeltaBreed itself.
+#' Retrieves all observation data from a DeltaBreed instance via BrAPI call.
+#' This includes observation units with no observations. converting it into a
+#' data frame that mimics the appearance of the data tables on the Experiments &
+#' Observations tab of DeltaBreed.
 #'
-#' @param page_size Page size to use when making the request. Larger page size can make requests faster but may cause errors.
-#' @param verbose Whether to print short messages showing the number of records found.
-#' @param drop_empty_columns Whether to drop all empty columns (including metadata columns) from the returned data frame
-#' @param include_dbids Whether to include the DbIds of the observation units, mostly useful for debugging.
+#' @param page_size Page size to use for the response. Larger page sizes may
+#'   decrease total retrieval time.
+#' @param drop_empty_columns Whether to drop all empty columns (including
+#'   metadata columns) from the returned data frame.
+#' @param include_dbids Whether to include the DbIds of the observation units,
+#'   mostly useful for debugging.
+#' @param verbose Whether to print short messages showing the number of records
+#'   found.
 #'
-#' @return A data frame of observations (phenotypes), formatted in DeltaBreed style.
+#' @return A data frame of all observation units and any observations
+#'   (phenotypes).
 #' @export
 #' @examples
-#' \dontrun{
-#' login_deltabreed()
+#' login_deltabreed("example", verbose = FALSE)
 #' obs <- get_observations()
-#' }
+#'
+#' # phenotype columns will be typed according to the observation variables (trait definitions)
+#' str(obs[,16:20])
+#' get_variables()
 get_observations <- function(page_size = 10000,
                              drop_empty_columns = FALSE,
                              include_dbids = FALSE,
@@ -24,18 +32,22 @@ get_observations <- function(page_size = 10000,
     stop("No authentication credentials found.",
          "Please run `login_deltabreed()` to authenticate first.")
   }
-  if (verbose) cat("Requesting observation units...\n")
-  df_obsunits <- build_get_request(.dbc_env$full_url,
-                                   .dbc_env$access_token,
-                                   "observationunits",
-                                   page_size = page_size) |>
-    execute_get_request() |>
-    json_list_to_df()
+  if (verbose) message("Requesting observation units...")
+  if (is_example_mode()) {
+    df_obsunits <- load_example_json("observationunits.json") |> json_list_to_df()
+  } else {
+    df_obsunits <- build_get_request(.dbc_env$full_url,
+                                     .dbc_env$access_token,
+                                     "observationunits",
+                                     page_size = page_size) |>
+      execute_get_request() |>
+      json_list_to_df()
+  }
 
-  # I don't think it should be possible for a program to have have valid expts but no obs units defined
+  # I don't think it's possible for a program to have have valid expts but no obs units defined
   # but in case it does happen, warn and return the empty df
   if (nrow(df_obsunits) == 0){
-    if (verbose == TRUE) cat("Experiments exist in the target program, but no observation units were found.")
+    if (verbose == TRUE) warning("Experiments exist in the target program, but no observation units were found.")
     return(df_obsunits)
   }
 
@@ -51,13 +63,17 @@ get_observations <- function(page_size = 10000,
   df_obsunits <- brapi_to_db_names(df_obsunits,
                                    mapping_obsunits)
 
-  if (verbose) cat("Requesting phenotype values...\n")
-  df_obs <- build_get_request(.dbc_env$full_url,
-                              .dbc_env$access_token,
-                              "observations",
-                              page_size = page_size) |>
-    execute_get_request() |>
-    json_list_to_df()
+  if (verbose) message("Requesting phenotype values...")
+  if (is_example_mode()) {
+    df_obs <- load_example_json("observations.json") |> json_list_to_df()
+  } else {
+    df_obs <- build_get_request(.dbc_env$full_url,
+                                .dbc_env$access_token,
+                                "observations",
+                                page_size = page_size) |>
+      execute_get_request() |>
+      json_list_to_df()
+  }
 
   if (nrow(df_obs) > 0){
     df_obs <- df_obs |>
@@ -113,7 +129,7 @@ get_observations <- function(page_size = 10000,
 #' @param exp_name An experiment name or vector of names.
 #' @param env_name An environment name or vector of names.
 #' @param exp_type An experiment type or vector of types.
-#' @param page_size Page size to use for the request. Larger page sizes can decrease total time needed, but may also throw errors.
+#' @param page_size Page size to use for the response. Larger page sizes may decrease total retrieval time.
 #' @param drop_empty_columns Whether to drop all empty columns (including metadata columns) from the returned data frame
 #' @param include_dbids Whether to include the DbIds of the observation units, mostly useful for debugging.
 #' @param verbose Whether to print short messages about the number of records found.
@@ -121,10 +137,24 @@ get_observations <- function(page_size = 10000,
 #' @returns A data frame of observations using the supplied filters.
 #' @export
 #'
-#' @examples \dontrun{
-#' filter_observations(year = 2025)
-#' filter_observations(year = c(2024, 2025), location = "Ithaca")
-#' }
+#' @examples
+#' login_deltabreed("example", verbose = FALSE)
+#'
+#' # the available filters (and values to filter on) correspond to columns of get_experiments()
+#' get_experiments()
+#'
+#' all_obs <- get_observations(verbose = FALSE)
+#' manitoba <- filter_observations(location = "Manitoba")
+#' table(all_obs$Location)
+#' table(manitoba$Location)
+#'
+#' # all filters can take vectors as arguments
+#' almtis <- filter_observations(location = c("Alma", "Tisdale"))
+#' table(almtis$Year, almtis$Location)
+#'
+#' # filters can be combined as needed
+#' ayt_mb <- filter_observations(exp_type = "AYT", location = "Manitoba")
+#' table(ayt_mb$ExpName, ayt_mb$EnvName)
 filter_observations <- function(year = NA,
                                 location = NA,
                                 exp_name = NA,
@@ -151,84 +181,93 @@ filter_observations <- function(year = NA,
                   .data$ExpType %in% exp_type | all(is.na(exp_type)))
 
   if (nrow(filt_expts) == 0){
-    if (verbose == TRUE) cat("No experiments found with the requested filters.\n")
+    if (verbose == TRUE) message("No experiments found with the requested filters.")
     return()
   }
-  if (verbose) cat(nrow(filt_expts), "matching environment(s) found.\n")
+  if (verbose) message(nrow(filt_expts), " matching environment(s) found.")
 
+  if (is_example_mode()) {
+    # need a slight workaround, since we can't use query filters on the static response
+    # filter the obsunit response to just the relevant obs units
+    filt_obsunits <- load_example_json("observationunits.json") |>
+      json_list_to_df() |>
+      dplyr::filter(.data$studyDbId %in% filt_expts$studyDbId)
 
-  # base requests we will append and reuse for each envt (study) in the filter
-  basereq_obs   <- build_get_request(.dbc_env$full_url,
-                                     .dbc_env$access_token,
-                                     'observations',
-                                     page_size = page_size)
-  basereq_obsunits <- build_get_request(.dbc_env$full_url,
-                                        .dbc_env$access_token,
-                                        'observationunits',
-                                        page_size = page_size)
-
-  # iterate across the list of studies
-  obsunit_dfs <- list()
-  obs_dfs <- list()
-  if (verbose) cat("Requesting observation units and observations...\n")
-  for (i in 1:nrow(filt_expts)){
-    if (verbose) {
-      cat("Expt:", filt_expts[i,"ExpName"], "Envt:", filt_expts[i,"EnvName"], "\n")
-    }
-    dbid = filt_expts[i,"studyDbId"]
-    req_obsunits <- basereq_obsunits |>
-      httr2::req_url_query(studyDbId = dbid)
-    obsunit_dfs[[i]] <- execute_get_request(req_obsunits) |>
-      json_list_to_df()
-
-    req_obs <- basereq_obs |>
-      httr2::req_url_query(studyDbId = dbid)
-    obs_dfs[[i]] <- execute_get_request(req_obs) |>
-      json_list_to_df()
-  }
-
-  df_obsunits <- dplyr::bind_rows(obsunit_dfs)
-  df_obs <- dplyr::bind_rows(obs_dfs)
-
-  # I don't think it should be possible for a program to have have valid expts but no obs units defined
-  # but in case it does happen, warn and return the empty df
-  if (nrow(df_obsunits) == 0){
-    if (verbose == TRUE) cat("Experiments exist in the target program, but no observation units were found\n")
-    return(df_obsunits)
-  }
-
-  # Year is stored separately in the /seasons endpoint, merge that in
-  df_obsunits <- dplyr::left_join(df_obsunits,
-                                  expts[,c("studyDbId","Year")],
-                                  by = "studyDbId")
-
-  mapping_obsunits <- define_mapping_obsunits()
-  df_obsunits <- handle_subunits_obsdf(df_obsunits)
-  df_obsunits <- brapi_to_db_names(df_obsunits,
-                                   mapping_obsunits)
-
-  if (nrow(df_obs) > 0){
-    df_obs <- df_obs |>
-      dplyr::select("observationUnitDbId",
-                    "observationVariableName",
-                    "value") |>
-      tidyr::pivot_wider(names_from = "observationVariableName",
-                         values_from = "value")
-
-    # save num of phenotype cols for later, useful for ordering columns
-    # df_obs should just have two columns
-    n_pheno_cols <- ncol(df_obs) - 1
-
-    df_final <- dplyr::left_join(df_obsunits,
-                                 df_obs,
-                                 by = dplyr::join_by("ObsUnitDbId" == "observationUnitDbId"))
-
+    df_final <- get_observations(verbose = verbose,
+                                 drop_empty_columns = drop_empty_columns,
+                                 include_dbids = TRUE) |>
+      dplyr::filter(.data$ObsUnitDbId %in% filt_obsunits$observationUnitDbId)
+    n_pheno_cols <- 5
   } else {
-    n_pheno_cols <- 0
-    df_final <- df_obsunits
+    # build base requests we will append and reuse for each envt (study) in the filter
+    basereq_obs   <- build_get_request(.dbc_env$full_url,
+                                       .dbc_env$access_token,
+                                       'observations',
+                                       page_size = page_size)
+    basereq_obsunits <- build_get_request(.dbc_env$full_url,
+                                          .dbc_env$access_token,
+                                          'observationunits',
+                                          page_size = page_size)
+    # iterate across the list of studies
+    obsunit_dfs <- list()
+    obs_dfs <- list()
+    if (verbose) message("Requesting observation units and observations...")
+    for (i in 1:nrow(filt_expts)){
+      if (verbose) {
+        message("Expt:", filt_expts[i,"ExpName"], "Envt:", filt_expts[i,"EnvName"])
+      }
+      dbid = filt_expts[i,"studyDbId"]
+      req_obsunits <- basereq_obsunits |>
+        httr2::req_url_query(studyDbId = dbid)
+      obsunit_dfs[[i]] <- execute_get_request(req_obsunits) |>
+        json_list_to_df()
+
+      req_obs <- basereq_obs |>
+        httr2::req_url_query(studyDbId = dbid)
+      obs_dfs[[i]] <- execute_get_request(req_obs) |>
+        json_list_to_df()
+    }
+    df_obsunits <- dplyr::bind_rows(obsunit_dfs)
+    df_obs <- dplyr::bind_rows(obs_dfs)
+
+    # I don't think it should be possible for a program to have have valid expts but no obs units defined
+    # but in case it does happen, warn and return the empty df
+    if (nrow(df_obsunits) == 0){
+      if (verbose == TRUE) message("Experiments exist in the target program, but no observation units were found.")
+      return(df_obsunits)
+    }
+
+    # Year is stored separately in the /seasons endpoint, merge that in
+    df_obsunits <- dplyr::left_join(df_obsunits,
+                                    expts[,c("studyDbId","Year")],
+                                    by = "studyDbId")
+
+    mapping_obsunits <- define_mapping_obsunits()
+    df_obsunits <- handle_subunits_obsdf(df_obsunits)
+    df_obsunits <- brapi_to_db_names(df_obsunits,
+                                     mapping_obsunits)
+
+    if (nrow(df_obs) > 0){
+      df_obs <- df_obs |>
+        dplyr::select("observationUnitDbId",
+                      "observationVariableName",
+                      "value") |>
+        tidyr::pivot_wider(names_from = "observationVariableName",
+                           values_from = "value")
+
+      # save num of phenotype cols for later, useful for ordering columns
+      # df_obs should just have two columns
+      n_pheno_cols <- ncol(df_obs) - 1
+
+      df_final <- dplyr::left_join(df_obsunits,
+                                   df_obs,
+                                   by = dplyr::join_by("ObsUnitDbId" == "observationUnitDbId"))
+    } else {
+      n_pheno_cols <- 0
+      df_final <- df_obsunits
+    }
   }
 
-  # drop columns as needed
   if (include_dbids == FALSE){
     df_final <- df_final |>
       dplyr::select(!c("ObsUnitDbId", "ParentObsUnitDbId"))
@@ -244,7 +283,6 @@ filter_observations <- function(year = NA,
     empty_cols <- apply(df_final, 2, function(x) all(is.na(x)))
     df_final <- df_final[,!empty_cols]
   }
-
   return(df_final)
 }
 
@@ -289,6 +327,8 @@ unpack_level_df <- function(relship_df){
 
 # observation units have a fairly complex handling
 # desired output is to have any observation units that have a parent labeled as sub-observation units instead
+# if an obs unit with ID 4 has a parent obs unit, that 4 value should NOT go in the obs unit ID column
+# 4 should go in the Sub Obs Unit ID column, and the parent's obs unit ID goes into that column
 handle_subunits_obsdf <- function(df){
   missing_colnames <- setdiff(
     c("observationUnitPosition.observationLevel.levelOrder",
@@ -362,9 +402,9 @@ sort_obsdf_rows <- function(df){
   if (length(missing_colnames) > 0){
     stop("One or more necessary column(s) are missing from data frame to be sorted.\n",
          "Missing column(s):\n",
-         cat(missing_colnames, sep = "\n"),
+         paste(missing_colnames, sep = "\n"),
          "Column names of df being sorted:",
-         cat(colnames(df), sep = "\n"))
+         paste(colnames(df), sep = "\n"))
   }
 
   df <- df |>
@@ -378,11 +418,11 @@ sort_obsdf_rows <- function(df){
     dplyr::mutate("expids_all_integers" = all(!grepl("\\D", .data$ExpUnitID)),
                   "subids_all_integers" = all(!grepl("\\D", .data$SubUnitID))) |>
     dplyr::mutate("new_order_obs" = ifelse(.data$expids_all_integers,
-                                         rank(as.integer(.data$ExpUnitID)),
-                                         rank(.data$ExpUnitID)),
+                                           rank(as.integer(.data$ExpUnitID)),
+                                           rank(.data$ExpUnitID)),
                   "new_order_sub" = ifelse(.data$subids_all_integers,
-                                         rank(as.integer(.data$SubUnitID)),
-                                         rank(.data$SubUnitID))) |>
+                                           rank(as.integer(.data$SubUnitID)),
+                                           rank(.data$SubUnitID))) |>
     dplyr::arrange(.data$ExpName,
                    .data$EnvName,
                    .data$has_subobs,

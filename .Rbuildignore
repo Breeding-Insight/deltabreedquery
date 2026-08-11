@@ -1,6 +1,6 @@
 ^.*\.Rproj$
+^.*\.DS_Store
 ^\.Rproj\.user$
 ^sandbox$
 .Rhistory
 tests/testthat/_vcr
-data-raw

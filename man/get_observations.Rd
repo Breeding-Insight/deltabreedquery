@@ -12,25 +12,33 @@ get_observations(
 )
 }
 \arguments{
-\item{page_size}{Page size to use when making the request. Larger page size can make requests faster but may cause errors.}
+\item{page_size}{Page size to use for the response. Larger page sizes may
+decrease total retrieval time.}
 
-\item{drop_empty_columns}{Whether to drop all empty columns (including metadata columns) from the returned data frame}
+\item{drop_empty_columns}{Whether to drop all empty columns (including
+metadata columns) from the returned data frame.}
 
-\item{include_dbids}{Whether to include the DbIds of the observation units, mostly useful for debugging.}
+\item{include_dbids}{Whether to include the DbIds of the observation units,
+mostly useful for debugging.}
 
-\item{verbose}{Whether to print short messages showing the number of records found.}
+\item{verbose}{Whether to print short messages showing the number of records
+found.}
 }
 \value{
-A data frame of observations (phenotypes), formatted in DeltaBreed style.
+A data frame of all observation units and any observations
+  (phenotypes).
 }
 \description{
-Retrieves all observation and sub-observation data from a DeltaBreed
-instance via BrAPI call, converting it into a data frame that resembles
-how the data appears on DeltaBreed itself.
+Retrieves all observation data from a DeltaBreed instance via BrAPI call.
+This includes observation units with no observations. converting it into a
+data frame that mimics the appearance of the data tables on the Experiments &
+Observations tab of DeltaBreed.
 }
 \examples{
-\dontrun{
-login_deltabreed()
+login_deltabreed("example", verbose = FALSE)
 obs <- get_observations()
-}
+
+# phenotype columns will be typed according to the observation variables (trait definitions)
+str(obs[,16:20])
+get_variables()
 }

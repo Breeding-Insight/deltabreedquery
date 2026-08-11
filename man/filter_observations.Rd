@@ -27,7 +27,7 @@ filter_observations(
 
 \item{exp_type}{An experiment type or vector of types.}
 
-\item{page_size}{Page size to use for the request. Larger page sizes can decrease total time needed, but may also throw errors.}
+\item{page_size}{Page size to use for the response. Larger page sizes may decrease total retrieval time.}
 
 \item{drop_empty_columns}{Whether to drop all empty columns (including metadata columns) from the returned data frame}
 
@@ -48,8 +48,21 @@ This function is best used by calling get_experiments() first, in order to
 see what experiments are actually present in the target DeltaBreed instance.
 }
 \examples{
-\dontrun{
-filter_observations(year = 2025)
-filter_observations(year = c(2024, 2025), location = "Ithaca")
-}
+login_deltabreed("example", verbose = FALSE)
+
+# the available filters (and values to filter on) correspond to columns of get_experiments()
+get_experiments()
+
+all_obs <- get_observations(verbose = FALSE)
+manitoba <- filter_observations(location = "Manitoba")
+table(all_obs$Location)
+table(manitoba$Location)
+
+# all filters can take vectors as arguments
+almtis <- filter_observations(location = c("Alma", "Tisdale"))
+table(almtis$Year, almtis$Location)
+
+# filters can be combined as needed
+ayt_mb <- filter_observations(exp_type = "AYT", location = "Manitoba")
+table(ayt_mb$ExpName, ayt_mb$EnvName)
 }

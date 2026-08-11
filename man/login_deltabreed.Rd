@@ -7,11 +7,11 @@
 login_deltabreed(base_url = NULL, access_token = NULL, verbose = TRUE)
 }
 \arguments{
-\item{base_url}{The BrAPI Base URL, found on the BrAPI tab of DeltaBreed
-in the BrAPI Information pane.}
+\item{base_url}{The BrAPI Base URL, found on the BrAPI tab of DeltaBreed in
+the BrAPI Information pane.}
 
-\item{access_token}{A valid Access Token, retrieved from the DeltaBreed
-user interface.}
+\item{access_token}{A valid Access Token, retrieved from the DeltaBreed user
+interface.}
 
 \item{verbose}{Whether to print out success messages.}
 }
@@ -19,19 +19,24 @@ user interface.}
 No return value, called for side effects (storing credentials)
 }
 \description{
-This function "logs in" to a DeltaBreed instance using the BrAPI Base
-  URL and an Access Token, which are then stored. Both the URL and the token
-  can be given as arguments or supplied to function prompts. The function
-  performs some basic checks, including verifying that the user has internet
-  access and making some test calls to the BrAPI server.
+This function stores your authentication credentials for a target DeltaBreed
+instance. To log in, you will require the BrAPI Base URL and a valid
+authentication token, both of which can be found on the `BrAPI` tab of
+DeltaBreed. The URL and token can be given as arguments or supplied to
+function prompts. The function performs some basic checks, including
+verifying that the user has internet access and making some test calls to the
+BrAPI server.
 }
 \details{
 Access tokens are valid for 24 hours after generation. To check your
-  authorization credentials at any time, use the
-  check_auth() function.
+authorization credentials at any time, use the check_auth() function.
 }
 \examples{
 \dontrun{
+# function can be run with no arguments to bring up a prompt to enter the URL/token
 login_deltabreed()
+
+# since your program's URL will remain static, you can supply it as an argument, e.g.:
+login_deltabreed("https://app.breedinginsight.net/v1/programs/f152169d-049f-4a7c-b5d8-c725b14e66f0")
 }
 }

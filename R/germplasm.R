@@ -1,26 +1,31 @@
-#' Get germplasm data
+#' Retrieve germplasm data
 #'
-#' @param page_size Page size to use for the response.
+#' @param page_size Page size to use for the response. Larger page sizes may decrease total retrieval time.
 #'
 #' @description Retrieves all germplasm data from the current DeltaBreed instance.
-#' @return Germplasm data from the BrAPI API
+#' @return Data frame of germplasm/accession/entry information drawn from BrAPI `/germplasm` endpoint.
+#' Data is formatted
 #' @export
 #' @examples
-#' \dontrun{
-#' login_deltabreed()
+#' login_deltabreed("example", verbose = FALSE)
+#'
 #' germplasm <- get_germplasm()
-#' }
+#' head(germplasm)
 get_germplasm <- function(page_size = 10000) {
   if (!auth_exists()) {
     stop("No authentication credentials found. ",
          "Please run `login_deltabreed()` to authenticate first.")
   }
-  df <- build_get_request(.dbc_env$full_url,
-                            .dbc_env$access_token,
-                            "germplasm",
-                            page_size = page_size) |>
-    execute_get_request() |>
-    json_list_to_df()
+  if (is_example_mode()) {
+    df <- load_example_json("germplasm.json") |> json_list_to_df()
+  } else {
+    df <- build_get_request(.dbc_env$full_url,
+                              .dbc_env$access_token,
+                              "germplasm",
+                              page_size = page_size) |>
+      execute_get_request() |>
+      json_list_to_df()
+  }
 
   if (nrow(df) == 0){
     return(df)

@@ -1,16 +1,19 @@
-#' Get observation variables (trait definitions) from a DeltaBreed instance.
+#' Retrieve observation variables (trait definitions) from a DeltaBreed instance.
 #'
 #' @param verbose Whether to print a short message about the number of traits found.
-#' @param include_archived Should the output include archived (non-active) traits?
+#' @param include_archived Whether the output should include archived (non-active).
 #'
-#' @description Retrieves trait data from a DeltaBreed program via BrAPI.
-#' @return Data frame of trait information drawn from BrAPI `/variables`
+#' @description Retrieves trait data from a DeltaBreed program via BrAPI,
+#' converting it into a data frame that mimics the appearance of the Ontology
+#' table in DeltaBreed itself.
+#' @return Data frame of trait definitions drawn from BrAPI `/variables`
 #' endpoint.
 #' @export
 #' @examples
-#' \dontrun{
-#' get_variables()
-#' }
+#' login_deltabreed("example", verbose = FALSE)
+#'
+#' vars <- get_variables()
+#' vars
 get_variables <- function(verbose = TRUE,
                           include_archived = FALSE) {
   if (!auth_exists()) {
@@ -19,21 +22,25 @@ get_variables <- function(verbose = TRUE,
   }
   # BrAPI nomenclature around trait endpoints is a bit confusing
   # lots of endpoints, but the one we need is mostly in /variables
-  df <- build_get_request(.dbc_env$full_url,
-                          .dbc_env$access_token,
-                          "variables",
-                          page_size = 1000) |>
-    execute_get_request() |>
-    json_list_to_df()
+  if (is_example_mode()) {
+    df <- load_example_json("variables.json") |> json_list_to_df()
+  } else {
+    df <- build_get_request(.dbc_env$full_url,
+                            .dbc_env$access_token,
+                            "variables",
+                            page_size = 1000) |>
+      execute_get_request() |>
+      json_list_to_df()
+  }
 
   if (nrow(df) == 0) return(df)
 
   # filter / report
-  if (verbose == TRUE) cat("Number of traits found: \t", nrow(df), "\n")
+  if (verbose == TRUE) message("Number of traits found: \t", nrow(df))
   if (!include_archived) {
     df <- df |> dplyr::filter(.data$status != "archived")
   }
-  if (verbose == TRUE) cat("Number of active traits found: \t", nrow(df), "\n")
+  if (verbose == TRUE) message("Number of active traits found: \t", nrow(df))
 
   # scale.validValue.categories will only appear if there are any ordinal/nominal vars
   # separate the handling of this column out on its own, simpler this way
@@ -74,7 +81,7 @@ get_variables <- function(verbose = TRUE,
 # need to convert df to a single string, semicolon+space delimited
 collapse_trait_categories <- function(df) {
   if (is.null(df)){
-    out_str = ""
+    out_str = NA
   } else if (ncol(df) == 1) {    # Nominal vars have only 1 column
     out_str = paste(df$value, collapse = "; ")
   } else if (ncol(df) == 2) {    # Ordinal vars have 2

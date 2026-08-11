@@ -2,22 +2,23 @@
 % Please edit documentation in R/germplasm.R
 \name{get_germplasm}
 \alias{get_germplasm}
-\title{Get germplasm data}
+\title{Retrieve germplasm data}
 \usage{
 get_germplasm(page_size = 10000)
 }
 \arguments{
-\item{page_size}{Page size to use for the response.}
+\item{page_size}{Page size to use for the response. Larger page sizes may decrease total retrieval time.}
 }
 \value{
-Germplasm data from the BrAPI API
+Data frame of germplasm/accession/entry information drawn from BrAPI `/germplasm` endpoint.
+Data is formatted
 }
 \description{
 Retrieves all germplasm data from the current DeltaBreed instance.
 }
 \examples{
-\dontrun{
-login_deltabreed()
+login_deltabreed("example", verbose = FALSE)
+
 germplasm <- get_germplasm()
-}
+head(germplasm)
 }

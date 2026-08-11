@@ -9,7 +9,8 @@ get_experiments(verbose = TRUE, include_dbids = FALSE)
 \arguments{
 \item{verbose}{Whether to print out the number of experiments/environments found.}
 
-\item{include_dbids}{Whether to include the lengthy unique ID for each experiment/environment. Typically used for debugging or merging data from other sources.}
+\item{include_dbids}{Whether to include the lengthy unique ID for each experiment/environment.
+Typically used for debugging or merging data from other sources.}
 }
 \value{
 Data frame of experiment/environment metadata.
@@ -20,8 +21,8 @@ program. This may include experiments for which no observations have been
 recorded yet.
 }
 \examples{
-\dontrun{
-login_deltabreed()
-get_experiments()
-}
+login_deltabreed("example", verbose = FALSE)
+
+expt <- get_experiments()
+expt
 }
