@@ -21,7 +21,6 @@ License: Apache License 2.0
 Encoding: UTF-8
 LazyData: true
 Suggests: 
-    httptest2,
     testthat (>= 3.0.0),
     vcr
 Config/testthat/edition: 3

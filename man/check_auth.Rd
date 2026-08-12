@@ -15,3 +15,8 @@ validates them by performing a test call to the BrAPI endpoint.
 Also prints the remaining time until the access token expires, if
 applicable.
 }
+\examples{
+check_auth()
+login_deltabreed("example", verbose = FALSE)
+check_auth()
+}

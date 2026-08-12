@@ -158,6 +158,10 @@ is_example_mode <- function() {
 #'
 #' @return No return value, called for side effects (printing status)
 #' @export
+#' @examples
+#' check_auth()
+#' login_deltabreed("example", verbose = FALSE)
+#' check_auth()
 check_auth <- function() {
   if (!auth_exists()){
     message("\u2718 You do not currently have any DeltaBreed authentication credentials stored.\n",
