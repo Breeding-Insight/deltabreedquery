@@ -33,7 +33,11 @@ get_germplasm <- function(page_size = 10000) {
 
   mapping_germplasm <- define_mapping_germplasm()
   renamed <- brapi_to_db_names(df, mapping_germplasm) |>
-    dplyr::mutate("GID" = as.integer(.data$GID)) |>
+    dplyr::mutate("GID" = as.integer(.data$GID),
+                  "FemaleParentGID" = as.integer(.data$FemaleParentGID),
+                  "MaleParentGID" = as.integer(.data$MaleParentGID),
+                  "Pedigree" = dplyr::if_else(.data$Pedigree == "", NA, .data$Pedigree),
+                  "CreatedDate" = as.Date.character(.data$CreatedDate, format = "%d/%m/%Y")) |>
     dplyr::arrange(.data$GID)
   renamed
 }
