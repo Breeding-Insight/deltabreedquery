@@ -8,9 +8,9 @@ Authors@R: c(
     comment = c(ORCID = "0000-0002-3280-5749"))
     )
 Maintainer: Tyr Wiesner-Hanks <twiesnerhanks@ufl.edu>
-Description: Data retrieval functions to fetch data from the 'DeltaBreed' breeding
-  data management platform via the 'BrAPI' open-source breeding data API
-  (<https://brapi.org/specification>). 
+Description: Simplified data retrieval from the 'DeltaBreed' breeding
+  data management platform (<https://sandbox.breedinginsight.net/>) via the
+  'BrAPI' open-source breeding data API (<https://brapi.org/specification>).
   Each of the four main data types stored in `DeltaBreed` (germplasm, trait variables,
   experiments/environments, and observations) are handled by a `get_datatype()`
   function that constructs and executes the request, handles paginated responses,
