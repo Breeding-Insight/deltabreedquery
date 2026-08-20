@@ -120,8 +120,7 @@ get_observations <- function(page_size = 10000,
 #' This function retrieves a filtered list of observation data using one or more
 #' filter values provided by the user, packaging the response into a data frame
 #' of the same format as [deltabreedquery::get_observations()].
-#'
-#' This function is best used by calling \code[[deltabreedquery::get_experiments()]
+#' This function is best used by calling \code[deltabreedquery::get_experiments()]
 #' first, in order to see what experiments are actually present in the target
 #' DeltaBreed instance.
 #'
