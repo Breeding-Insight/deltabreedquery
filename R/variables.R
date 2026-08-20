@@ -6,7 +6,7 @@
 #' @description Retrieves trait data from a DeltaBreed program via BrAPI,
 #' converting it into a data frame that mimics the appearance of the Ontology
 #' table in DeltaBreed itself.
-#' @return Data frame of trait definitions drawn from BrAPI `/variables`
+#' @return Data frame of trait definitions drawn from BrAPI /variables
 #' endpoint.
 #' @export
 #' @examples

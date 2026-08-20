@@ -20,7 +20,7 @@ get_experiments <- function(verbose = TRUE,
                             include_dbids = FALSE) {
   if (!auth_exists()) {
     stop("No authentication credentials found. ",
-         "Please run `login_deltabreed()` to authenticate first.")
+         "Please run login_deltabreed() to authenticate first.")
   }
   # Need to pull from trials, studies, and seasons endpoints
   if (is_example_mode()) {
