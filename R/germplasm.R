@@ -2,6 +2,10 @@
 #'
 #' @description Retrieves all germplasm data from the current DeltaBreed
 #'   instance, reformatting it to match DeltaBreed layout.
+#'
+#' @param page_size Page size to use for the response. Larger page sizes may
+#'   decrease total retrieval time.
+#'
 #' @return Data frame of germplasm/accession/entry information.
 #' @export
 #' @examples

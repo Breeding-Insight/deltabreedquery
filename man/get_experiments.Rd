@@ -19,8 +19,8 @@ Data frame of experiment/environment metadata.
 }
 \description{
 Retrieves a summary of all experiments and environments in a
-  given DeltaBreed program. This may include experiments for which no
-  observations have been recorded yet.
+given DeltaBreed program. This may include experiments for which no
+observations have been recorded yet.
 }
 \examples{
 login_deltabreed("example", verbose = FALSE)

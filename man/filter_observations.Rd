@@ -44,14 +44,12 @@ A data frame of observations using the supplied filters.
 }
 \description{
 This function retrieves a foo filtered list of observation data
-  using one or more filter values provided by the user, packaging the
-  response into a data frame of the same format as
-  \code{\link[deltabreedquery]{get_observations()}}.
+using one or more filter values provided by the user, packaging the
+response into a data frame of the same format as \code{\link[=get_observations]{get_observations()}}.
 
-  This function is best
-  used by calling \code{\link[deltabreedquery]{get_experiments()}} first, in
-  order to see what experiments are actually present in the target DeltaBreed
-  instance.
+This function is best used by calling \code{\link[=get_experiments]{get_experiments()}} first, in order
+to see what experiments are actually present in the target DeltaBreed
+instance.
 }
 \examples{
 login_deltabreed("example", verbose = FALSE)

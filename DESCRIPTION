@@ -33,3 +33,4 @@ Imports:
     rlang,
     jsonlite
 Config/roxygen2/version: 8.1.0
+Roxygen: list(markdown = TRUE)

@@ -26,13 +26,13 @@ found.}
 }
 \value{
 A data frame of all observation units and any observations
-  (phenotypes).
+(phenotypes).
 }
 \description{
 Retrieves all observation data from a DeltaBreed instance via
-  BrAPI call. This includes observation units with no observations.
-  converting it into a data frame that mimics the appearance of the data
-  tables on the Experiments & Observations tab of DeltaBreed.
+BrAPI call. This includes observation units with no observations.
+converting it into a data frame that mimics the appearance of the data
+tables on the Experiments & Observations tab of DeltaBreed.
 }
 \examples{
 login_deltabreed("example", verbose = FALSE)

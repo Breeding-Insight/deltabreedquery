@@ -6,12 +6,16 @@
 \usage{
 get_germplasm(page_size = 10000)
 }
+\arguments{
+\item{page_size}{Page size to use for the response. Larger page sizes may
+decrease total retrieval time.}
+}
 \value{
 Data frame of germplasm/accession/entry information.
 }
 \description{
 Retrieves all germplasm data from the current DeltaBreed
-  instance, reformatting it to match DeltaBreed layout.
+instance, reformatting it to match DeltaBreed layout.
 }
 \examples{
 login_deltabreed("example", verbose = FALSE)

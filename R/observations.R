@@ -119,12 +119,10 @@ get_observations <- function(page_size = 10000,
 #'
 #' @description This function retrieves a foo filtered list of observation data
 #'   using one or more filter values provided by the user, packaging the
-#'   response into a data frame of the same format as
-#'   \code{\link[deltabreedquery]{get_observations()}}.
+#'   response into a data frame of the same format as [get_observations()].
 #'
-#'   This function is best
-#'   used by calling \code{\link[deltabreedquery]{get_experiments()}} first, in
-#'   order to see what experiments are actually present in the target DeltaBreed
+#'   This function is best used by calling [get_experiments()] first, in order
+#'   to see what experiments are actually present in the target DeltaBreed
 #'   instance.
 #'
 #' @param year A year or vector of years.
