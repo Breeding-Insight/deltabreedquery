@@ -1,11 +1,12 @@
 #' Retrieve observation variables (trait definitions) from a DeltaBreed instance.
 #'
-#' @param verbose Whether to print a short message about the number of traits found.
-#' @param include_archived Whether the output should include archived (non-active).
-#'
 #' @description Retrieves trait data from a DeltaBreed program via BrAPI,
 #' converting it into a data frame that mimics the appearance of the Ontology
 #' table in DeltaBreed itself.
+#'
+#' @param verbose Whether to print a short message about the number of traits found.
+#' @param include_archived Whether the output should include archived (non-active).
+
 #' @return Data frame of trait definitions drawn from BrAPI /variables
 #' endpoint.
 #' @export

@@ -1,12 +1,8 @@
 #' Retrieve germplasm data
 #'
-#' @param page_size Page size to use for the response. Larger page sizes may
-#'   decrease total retrieval time.
-#'
 #' @description Retrieves all germplasm data from the current DeltaBreed
-#'   instance.
-#' @return Data frame of germplasm/accession/entry information drawn from BrAPI
-#'   /germplasm endpoint. Data is formatted
+#'   instance, reformatting it to match DeltaBreed layout.
+#' @return Data frame of germplasm/accession/entry information.
 #' @export
 #' @examples
 #' login_deltabreed("example", verbose = FALSE)

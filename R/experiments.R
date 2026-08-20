@@ -1,12 +1,14 @@
 #' Retrieve experiment summary
 #'
-#' Retrieves a summary of all experiments and environments in a given DeltaBreed
-#' program. This may include experiments for which no observations have been
-#' recorded yet.
+#' @description Retrieves a summary of all experiments and environments in a
+#'   given DeltaBreed program. This may include experiments for which no
+#'   observations have been recorded yet.
 #'
-#' @param verbose Whether to print out the number of experiments/environments found.
-#' @param include_dbids Whether to include the lengthy unique ID for each experiment/environment.
-#' Typically used for debugging or merging data from other sources.
+#' @param verbose Whether to print out the number of experiments/environments
+#'   found.
+#' @param include_dbids Whether to include the lengthy unique ID for each
+#'   experiment/environment. Typically used for debugging or merging data from
+#'   other sources.
 #'
 #' @return Data frame of experiment/environment metadata.
 #' @export

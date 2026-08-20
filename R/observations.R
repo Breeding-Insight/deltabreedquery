@@ -1,9 +1,9 @@
 #' Retrieve all observation data
 #'
-#' Retrieves all observation data from a DeltaBreed instance via BrAPI call.
-#' This includes observation units with no observations. converting it into a
-#' data frame that mimics the appearance of the data tables on the Experiments &
-#' Observations tab of DeltaBreed.
+#' @description Retrieves all observation data from a DeltaBreed instance via
+#'   BrAPI call. This includes observation units with no observations.
+#'   converting it into a data frame that mimics the appearance of the data
+#'   tables on the Experiments & Observations tab of DeltaBreed.
 #'
 #' @param page_size Page size to use for the response. Larger page sizes may
 #'   decrease total retrieval time.
@@ -117,9 +117,9 @@ get_observations <- function(page_size = 10000,
 
 #' Retrieve a filtered list of observation data
 #'
-#' This function retrieves a filtered list of observation data using one or more
+#' @description This function retrieves a foo filtered list of observation data using one or more
 #' filter values provided by the user, packaging the response into a data frame
-#' of the same format as [deltabreedquery::get_observations()].
+#' of the same format as \code{\link[deltabreedquery]{get_observations}}.
 #' This function is best used by calling \code[deltabreedquery::get_experiments()]
 #' first, in order to see what experiments are actually present in the target
 #' DeltaBreed instance.

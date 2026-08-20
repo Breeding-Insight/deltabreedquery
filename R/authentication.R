@@ -3,15 +3,17 @@
 
 #' Log in to a DeltaBreed instance
 #'
-#' This function stores your authentication credentials for a target DeltaBreed
+#' @description This function stores your authentication credentials for a target DeltaBreed
 #' instance. To log in, you will require the BrAPI Base URL and a valid
 #' authentication token, both of which can be found on the 'BrAPI' tab of
-#' DeltaBreed. The URL and token can be given as arguments or supplied to
+#' DeltaBreed.
+#'
+#' The URL and token can be given as arguments or supplied to
 #' function prompts. The function performs some basic checks, including
 #' verifying that the user has internet access and making some test calls to the
 #' BrAPI server.
 #'
-#' Access tokens are valid for 24 hours after generation. To check your
+#' @details Access tokens are valid for 24 hours after generation. To check your
 #' authorization credentials at any time, use the check_auth() function.
 #'
 #' @return No return value, called for side effects (storing credentials)
