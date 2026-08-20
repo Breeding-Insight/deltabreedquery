@@ -12,7 +12,7 @@ get_variables(verbose = TRUE, include_archived = FALSE)
 \item{include_archived}{Whether the output should include archived (non-active).}
 }
 \value{
-Data frame of trait definitions drawn from BrAPI `/variables`
+Data frame of trait definitions drawn from BrAPI /variables
 endpoint.
 }
 \description{

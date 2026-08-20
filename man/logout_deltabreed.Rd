@@ -13,5 +13,5 @@ No return value, called for side effects (clearing credentials)
 Removes stored credentials (URL and access token) from the
 package environment. The access token will remain valid for as long as the
 DeltaBreed instance specifies, but in order to retrieve data the URL/token
-will need to be-entered with `login_deltabreed()`.
+will need to be-entered with \code{\link[deltabreedquery]{login_deltabreed()}}.
 }

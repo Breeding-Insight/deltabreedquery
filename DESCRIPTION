@@ -1,7 +1,7 @@
 Package: deltabreedquery
 Type: Package
 Title: Fast, Simple API Tools for Retrieving Data from 'DeltaBreed'
-Version: 1.0.2
+Version: 1.0.3
 Authors@R: c(
     person("Tyr", "Wiesner-Hanks",
     email = "twiesnerhanks@ufl.edu", role = c("aut","cre"),
@@ -32,4 +32,4 @@ Imports:
     tidyr,
     rlang,
     jsonlite
-RoxygenNote: 7.3.3
+Config/roxygen2/version: 8.1.0

@@ -8,10 +8,10 @@ auth_exists()
 }
 \value{
 Logical value indicating if base_url and access_token exist in the
-  global env.
+  local env.
 }
 \description{
-Checks if a BrAPI Base URL and access token exist in the global
+Checks if a BrAPI Base URL and access token exist in the current
   environment. Note that it does not specify whether the credentials are
   valid, merely that they exist.
 }

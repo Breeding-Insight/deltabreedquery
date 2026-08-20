@@ -2,23 +2,25 @@
 % Please edit documentation in R/experiments.R
 \name{get_experiments}
 \alias{get_experiments}
-\title{Retrieve experiment summary}
+\title{Retrieve experiment/ summary}
 \usage{
 get_experiments(verbose = TRUE, include_dbids = FALSE)
 }
 \arguments{
-\item{verbose}{Whether to print out the number of experiments/environments found.}
+\item{verbose}{Whether to print out the number of experiments/environments
+found.}
 
-\item{include_dbids}{Whether to include the lengthy unique ID for each experiment/environment.
-Typically used for debugging or merging data from other sources.}
+\item{include_dbids}{Whether to include the lengthy unique ID for each
+experiment/environment. Typically used for debugging or merging data from
+other sources.}
 }
 \value{
 Data frame of experiment/environment metadata.
 }
 \description{
-Retrieves a summary of all experiments and environments in a given DeltaBreed
-program. This may include experiments for which no observations have been
-recorded yet.
+Retrieves a summary of all experiments and environments in a
+  given DeltaBreed program. This may include experiments for which no
+  observations have been recorded yet.
 }
 \examples{
 login_deltabreed("example", verbose = FALSE)

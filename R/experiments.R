@@ -1,4 +1,4 @@
-#' Retrieve experiment summary
+#' Retrieve experiment/ summary
 #'
 #' @description Retrieves a summary of all experiments and environments in a
 #'   given DeltaBreed program. This may include experiments for which no

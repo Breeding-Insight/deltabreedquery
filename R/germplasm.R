@@ -1,4 +1,4 @@
-#' Retrieve germplasm data
+#' Retrieve germplasm records
 #'
 #' @description Retrieves all germplasm data from the current DeltaBreed
 #'   instance, reformatting it to match DeltaBreed layout.

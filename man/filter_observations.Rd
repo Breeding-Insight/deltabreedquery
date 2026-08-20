@@ -27,25 +27,31 @@ filter_observations(
 
 \item{exp_type}{An experiment type or vector of types.}
 
-\item{page_size}{Page size to use for the response. Larger page sizes may decrease total retrieval time.}
+\item{page_size}{Page size to use for the response. Larger page sizes may
+decrease total retrieval time.}
 
-\item{drop_empty_columns}{Whether to drop all empty columns (including metadata columns) from the returned data frame}
+\item{drop_empty_columns}{Whether to drop all empty columns (including
+metadata columns) from the returned data frame}
 
-\item{include_dbids}{Whether to include the DbIds of the observation units, mostly useful for debugging.}
+\item{include_dbids}{Whether to include the DbIds of the observation units,
+mostly useful for debugging.}
 
-\item{verbose}{Whether to print short messages about the number of records found.}
+\item{verbose}{Whether to print short messages about the number of records
+found.}
 }
 \value{
 A data frame of observations using the supplied filters.
 }
 \description{
-This function retrieves a filtered list of observation data using one or more
-filters provided by the user, packaging the response into a data frame of the
-same format as get_observations().
-}
-\details{
-This function is best used by calling get_experiments() first, in order to
-see what experiments are actually present in the target DeltaBreed instance.
+This function retrieves a foo filtered list of observation data
+  using one or more filter values provided by the user, packaging the
+  response into a data frame of the same format as
+  \code{\link[deltabreedquery]{get_observations()}}.
+
+  This function is best
+  used by calling \code{\link[deltabreedquery]{get_experiments()}} first, in
+  order to see what experiments are actually present in the target DeltaBreed
+  instance.
 }
 \examples{
 login_deltabreed("example", verbose = FALSE)
