@@ -7,9 +7,10 @@
 get_variables(verbose = TRUE, include_archived = FALSE)
 }
 \arguments{
-\item{verbose}{Whether to print a short message about the number of traits found.}
+\item{verbose}{If \code{FALSE}, all non-essential messages will be suppressed.}
 
-\item{include_archived}{Whether the output should include archived (non-active).}
+\item{include_archived}{If \code{TRUE}, archived (non-active) variables will be
+included in the retrieved data frame.}
 }
 \value{
 Data frame of trait definitions drawn from BrAPI /variables

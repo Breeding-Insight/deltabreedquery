@@ -7,12 +7,11 @@
 get_experiments(verbose = TRUE, include_dbids = FALSE)
 }
 \arguments{
-\item{verbose}{Whether to print out the number of experiments/environments
-found.}
+\item{verbose}{If \code{FALSE}, all non-essential messages will be suppressed.}
 
-\item{include_dbids}{Whether to include the lengthy unique ID for each
-experiment/environment. Typically used for debugging or merging data from
-other sources.}
+\item{include_dbids}{If \code{TRUE}, the alphanumeric DBIDs used by DeltaBreed
+for each experiment/environment will be included in the retrieved data
+frame. Typically used for debugging or merging data from other sources.}
 }
 \value{
 Data frame of experiment/environment metadata.
