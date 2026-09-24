@@ -13,6 +13,7 @@ filter_observations(
   page_size = 10000,
   drop_empty_columns = FALSE,
   include_dbids = FALSE,
+  case_correct = TRUE,
   verbose = TRUE
 )
 }
@@ -30,14 +31,19 @@ filter_observations(
 \item{page_size}{Page size to use for the response. Larger page sizes may
 decrease total retrieval time.}
 
-\item{drop_empty_columns}{Whether to drop all empty columns (including
-metadata columns) from the returned data frame}
+\item{drop_empty_columns}{If \code{TRUE}, all empty columns (including
+metadata columns) will be dropped from the retrieved data frame.}
 
-\item{include_dbids}{Whether to include the DbIds of the observation units,
-mostly useful for debugging.}
+\item{include_dbids}{If \code{TRUE}, the alphanumeric DBIDs used by DeltaBreed
+will be included in the retrieved data frame.}
 
-\item{verbose}{Whether to print short messages about the number of records
-found.}
+\item{case_correct}{If \code{FALSE}, any categorical variables with case
+mismatches to the trait variable definition (e.g. a value of "Blue" in the
+observation data, when the defined trait categories are "red" and "blue")
+will be masked as \code{NA} instead of being case-corrected to the
+appropriate values.}
+
+\item{verbose}{If \code{FALSE}, all non-essential messages will be suppressed.}
 }
 \value{
 A data frame of observations using the supplied filters.
