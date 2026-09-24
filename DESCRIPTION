@@ -1,7 +1,7 @@
 Package: deltabreedquery
 Type: Package
 Title: Fast, Simple API Tools for Retrieving Data from 'DeltaBreed'
-Version: 1.0.3
+Version: 1.0.4
 Authors@R: c(
     person("Tyr", "Wiesner-Hanks",
     email = "twiesnerhanks@ufl.edu", role = c("aut","cre"),

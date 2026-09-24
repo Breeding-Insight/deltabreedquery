@@ -104,14 +104,22 @@ get_observations <- function(page_size = 10000,
 
   df_final <- sort_obsdf_rows(df_final)
   df_final <- sort_obsdf_columns(df_final, n_pheno_cols)
+  vars_df <- get_variables(verbose = FALSE)
   df_final <- type_obsdf_columns(df_final,
-                                 get_variables(verbose = FALSE),
+                                 vars_df,
                                  n_pheno_cols = n_pheno_cols)
 
   if (drop_empty_columns == TRUE){
     empty_cols <- apply(df_final, 2, function(x) all(is.na(x)))
     df_final <- df_final[,!empty_cols]
   }
+
+  if (verbose) {
+    total_vars <- nrow(vars_df)
+    message("Found ", n_pheno_cols, " observation variable(s) in retrieved dataset of ",
+            total_vars, " total observation variable(s).")
+  }
+
   df_final
 }
 
@@ -280,14 +288,22 @@ filter_observations <- function(year = NA,
 
   df_final <- sort_obsdf_rows(df_final)
   df_final <- sort_obsdf_columns(df_final, n_pheno_cols)
+  vars_df <- get_variables(verbose = FALSE)
   df_final <- type_obsdf_columns(df_final,
-                                 get_variables(verbose = FALSE),
+                                 vars_df,
                                  n_pheno_cols = n_pheno_cols)
 
   if (drop_empty_columns == TRUE){
     empty_cols <- apply(df_final, 2, function(x) all(is.na(x)))
     df_final <- df_final[,!empty_cols]
   }
+
+  if (verbose) {
+    total_vars <- nrow(vars_df)
+    message("Found ", n_pheno_cols, " observation variable(s) in retrieved dataset of ",
+            total_vars, " total observation variable(s).")
+  }
+
   return(df_final)
 }
 
@@ -396,8 +412,9 @@ handle_subunits_obsdf <- function(df){
   return(df)
 }
 
-# sorting gets kind of complex so we can handle integer ExpUnitIDs and/or SubUnitIDs
+# sorting gets kind of complex so that we can handle integer ExpUnitIDs and/or SubUnitIDs
 # for IDs like 1,2,[...],10,11,12, we want to sort that as an integer, not as a string
+# however, when we mix
 # make this check separately within each expt/envt (study level in BrAPI terms)
 sort_obsdf_rows <- function(df){
   missing_colnames <- setdiff(
