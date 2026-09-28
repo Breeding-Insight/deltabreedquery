@@ -524,7 +524,7 @@ type_obsdf_columns <- function(df, var_df, n_pheno_cols, case_correct = TRUE){
     if (dtype == "Numerical"){
       # NA / na strings are allowed in DeltaBreed numeric columns
       # account for this so you don't throw a warning and freak people out
-      df[,j] <- ifelse(df[,j] %in% c("NA","na","Na","N/A"),
+      df[,j] <- ifelse(df[,j] %in% c("NA","na","Na","N/A","n/a"),
                        NA, df[,j])
       df[,j] <- as.numeric(df[,j])
     } else if (dtype == "Text"){
