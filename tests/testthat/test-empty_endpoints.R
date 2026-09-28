@@ -1,7 +1,8 @@
 skip_on_cran()
 
-# base URL for the Empty Program instance on rel-test
-empty_prog_url <- "https://rel-test.breedinginsight.net/v1/programs/ee1b32e6-287f-4412-902e-1bab9e615b97"
+# base URL for the Empty Program B instance on rel-test
+# someone uploaded data on the original empty program...
+empty_prog_url <- "https://rel-test.breedinginsight.net/v1/programs/69af8c41-391b-4c56-9944-9c0700a89efa"
 
 test_that("responses from empty endpoints are 200 or 500 response", {
   vcr::local_cassette("empty_requests")
