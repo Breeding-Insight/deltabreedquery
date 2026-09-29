@@ -1,4 +1,4 @@
-# deltabreedquery <img src="man/figures/logo_deltabreedquery.png" align="right" width="250"/>
+# deltabreedquery <img src="https://github.com/Breeding-Insight/deltabreedquery/blob/main/man/figures/logo_deltabreedquery.png" align="right" width="200"/>
 
 This is an R package to pull data from Breeding Insight's [DeltaBreed](https://sandbox.breedinginsight.net/) platform into R via [BrAPI](https://brapi.org/) calls. It offers basic functions to retrieve four types of data:
 
