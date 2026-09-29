@@ -4,9 +4,9 @@
 #' converting it into a data frame that mimics the appearance of the Ontology
 #' table in DeltaBreed itself.
 #'
-#' @param verbose Whether to print a short message about the number of traits found.
-#' @param include_archived Whether the output should include archived (non-active).
-
+#' @param verbose If `FALSE`, all non-essential messages will be suppressed.
+#' @param include_archived If `TRUE`, archived (non-active) variables will be
+#'   included in the retrieved data frame.
 #' @return Data frame of trait definitions drawn from BrAPI /variables
 #' endpoint.
 #' @export

@@ -21,7 +21,7 @@
 #'   the BrAPI Information pane.
 #' @param access_token A valid Access Token, retrieved from the DeltaBreed user
 #'   interface.
-#' @param verbose Whether to print out success messages.
+#' @param verbose If `FALSE`, all non-essential messages will be suppressed.
 #' @export
 #' @examples \dontrun{
 #' # function can be run with no arguments to bring up a prompt to enter the URL/token

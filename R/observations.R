@@ -7,12 +7,16 @@
 #'
 #' @param page_size Page size to use for the response. Larger page sizes may
 #'   decrease total retrieval time.
-#' @param drop_empty_columns Whether to drop all empty columns (including
-#'   metadata columns) from the returned data frame.
-#' @param include_dbids Whether to include the DbIds of the observation units,
-#'   mostly useful for debugging.
-#' @param verbose Whether to print short messages showing the number of records
-#'   found.
+#' @param drop_empty_columns If `TRUE`, all empty columns (including
+#'   metadata columns) will be dropped from the retrieved data frame.
+#' @param include_dbids If `TRUE`, the alphanumeric DBIDs used by DeltaBreed
+#'   will be included in the retrieved data frame.
+#' @param case_correct If `FALSE`, any categorical variables with case
+#'   mismatches to the trait variable definition (e.g. a value of "Blue" in the
+#'   observation data, when the defined trait categories are "red" and "blue")
+#'   will be masked as `NA` instead of being case-corrected to the
+#'   appropriate values.
+#' @param verbose If `FALSE`, all non-essential messages will be suppressed.
 #'
 #' @return A data frame of all observation units and any observations
 #'   (phenotypes).
@@ -27,12 +31,13 @@
 get_observations <- function(page_size = 10000,
                              drop_empty_columns = FALSE,
                              include_dbids = FALSE,
+                             case_correct = TRUE,
                              verbose = TRUE) {
   if (!auth_exists()) {
     stop("No authentication credentials found.",
          "Please run login_deltabreed() to authenticate first.")
   }
-  if (verbose) message("Requesting observation units...")
+  if (verbose) message("Fetching observation units...")
   if (is_example_mode()) {
     df_obsunits <- load_example_json("observationunits.json") |> json_list_to_df()
   } else {
@@ -63,7 +68,7 @@ get_observations <- function(page_size = 10000,
   df_obsunits <- brapi_to_db_names(df_obsunits,
                                    mapping_obsunits)
 
-  if (verbose) message("Requesting phenotype values...")
+  if (verbose) message("Fetching phenotype values...")
   if (is_example_mode()) {
     df_obs <- load_example_json("observations.json") |> json_list_to_df()
   } else {
@@ -104,14 +109,23 @@ get_observations <- function(page_size = 10000,
 
   df_final <- sort_obsdf_rows(df_final)
   df_final <- sort_obsdf_columns(df_final, n_pheno_cols)
+  vars_df <- get_variables(verbose = FALSE)
   df_final <- type_obsdf_columns(df_final,
-                                 get_variables(verbose = FALSE),
-                                 n_pheno_cols = n_pheno_cols)
+                                 vars_df,
+                                 n_pheno_cols = n_pheno_cols,
+                                 case_correct = case_correct)
 
   if (drop_empty_columns == TRUE){
     empty_cols <- apply(df_final, 2, function(x) all(is.na(x)))
     df_final <- df_final[,!empty_cols]
   }
+
+  if (verbose) {
+    total_vars <- nrow(vars_df)
+    message("Number of traits found in retrieved dataset:\t", n_pheno_cols,
+            "\nNumber of traits in program:\t\t\t", total_vars)
+  }
+
   df_final
 }
 
@@ -132,12 +146,16 @@ get_observations <- function(page_size = 10000,
 #' @param exp_type An experiment type or vector of types.
 #' @param page_size Page size to use for the response. Larger page sizes may
 #'   decrease total retrieval time.
-#' @param drop_empty_columns Whether to drop all empty columns (including
-#'   metadata columns) from the returned data frame
-#' @param include_dbids Whether to include the DbIds of the observation units,
-#'   mostly useful for debugging.
-#' @param verbose Whether to print short messages about the number of records
-#'   found.
+#' @param drop_empty_columns If `TRUE`, all empty columns (including
+#'   metadata columns) will be dropped from the retrieved data frame.
+#' @param include_dbids If `TRUE`, the alphanumeric DBIDs used by DeltaBreed
+#'   will be included in the retrieved data frame.
+#' @param case_correct If `FALSE`, any categorical variables with case
+#'   mismatches to the trait variable definition (e.g. a value of "Blue" in the
+#'   observation data, when the defined trait categories are "red" and "blue")
+#'   will be masked as `NA` instead of being case-corrected to the
+#'   appropriate values.
+#' @param verbose If `FALSE`, all non-essential messages will be suppressed.
 #'
 #' @returns A data frame of observations using the supplied filters.
 #' @export
@@ -168,7 +186,9 @@ filter_observations <- function(year = NA,
                                 page_size = 10000,
                                 drop_empty_columns = FALSE,
                                 include_dbids = FALSE,
+                                case_correct = TRUE,
                                 verbose = TRUE){
+  # basic pre-function checks
   if (all(is.na(c(year, location, exp_name, env_name, exp_type)))){
     stop("Please specify a year, location, experiment name, environment name, and/or experiment type. ",
          "To retrieve all observation data, use get_observations().")
@@ -177,6 +197,9 @@ filter_observations <- function(year = NA,
     stop("No authentication credentials found. ",
          "Please run login_deltabreed() to authenticate first.")
   }
+
+  # filtering is done using a series of GET requests with study (envt) DBIDs
+  # first, check if any studies actually exist matching the filter parameters
   expts <- get_experiments(verbose = FALSE, include_dbids = TRUE)
   filt_expts <- expts |>
     dplyr::filter(.data$Year %in% year | all(is.na(year)),
@@ -184,12 +207,12 @@ filter_observations <- function(year = NA,
                   .data$ExpName %in% exp_name | all(is.na(exp_name)),
                   .data$EnvName %in% env_name | all(is.na(env_name)),
                   .data$ExpType %in% exp_type | all(is.na(exp_type)))
-
-  if (nrow(filt_expts) == 0){
+  n_envts_found <- nrow(filt_expts)
+  if (n_envts_found == 0){
     if (verbose == TRUE) message("No experiments found with the requested filters.")
     return()
   }
-  if (verbose) message(nrow(filt_expts), " matching environment(s) found.")
+  if (verbose) message(n_envts_found, " matching environment(s) found.")
 
   if (is_example_mode()) {
     # need a slight workaround, since we can't use query filters on the static response
@@ -216,10 +239,10 @@ filter_observations <- function(year = NA,
     # iterate across the list of studies
     obsunit_dfs <- list()
     obs_dfs <- list()
-    if (verbose) message("Requesting observation units and observations...")
-    for (i in 1:nrow(filt_expts)){
+    for (i in 1:n_envts_found){
       if (verbose) {
-        message("Expt:", filt_expts[i,"ExpName"], "Envt:", filt_expts[i,"EnvName"])
+        message("Fetching envt ", i, " of ", n_envts_found, "...\t\t",
+                filt_expts[i,"ExpName"], "\t", filt_expts[i,"EnvName"])
       }
       dbid = filt_expts[i,"studyDbId"]
       req_obsunits <- basereq_obsunits |>
@@ -280,17 +303,25 @@ filter_observations <- function(year = NA,
 
   df_final <- sort_obsdf_rows(df_final)
   df_final <- sort_obsdf_columns(df_final, n_pheno_cols)
+  vars_df <- get_variables(verbose = FALSE)
   df_final <- type_obsdf_columns(df_final,
-                                 get_variables(verbose = FALSE),
-                                 n_pheno_cols = n_pheno_cols)
+                                 vars_df,
+                                 n_pheno_cols = n_pheno_cols,
+                                 case_correct = case_correct)
 
   if (drop_empty_columns == TRUE){
     empty_cols <- apply(df_final, 2, function(x) all(is.na(x)))
     df_final <- df_final[,!empty_cols]
   }
+
+  if (verbose) {
+    total_vars <- nrow(vars_df)
+    message("Number of traits found in retrieved dataset:\t", n_pheno_cols,
+            "\nNumber of traits in program:\t\t\t", total_vars)
+  }
+
   return(df_final)
 }
-
 
 define_mapping_obsunits <- function(){
   mapping <- c(
@@ -396,8 +427,9 @@ handle_subunits_obsdf <- function(df){
   return(df)
 }
 
-# sorting gets kind of complex so we can handle integer ExpUnitIDs and/or SubUnitIDs
+# sorting gets kind of complex so that we can handle integer ExpUnitIDs and/or SubUnitIDs
 # for IDs like 1,2,[...],10,11,12, we want to sort that as an integer, not as a string
+# however, when we mix
 # make this check separately within each expt/envt (study level in BrAPI terms)
 sort_obsdf_rows <- function(df){
   missing_colnames <- setdiff(
@@ -461,7 +493,7 @@ sort_obsdf_columns <- function(df, n_pheno_cols){
 
 # apply appropriate data types using the obs variable definitions in /variables endpoint
 # dtypes are present in the initial JSON but lost upon import to R
-type_obsdf_columns <- function(df, var_df, n_pheno_cols){
+type_obsdf_columns <- function(df, var_df, n_pheno_cols, case_correct = TRUE){
   if (n_pheno_cols == 0){
     return(df)
   }
@@ -473,6 +505,8 @@ type_obsdf_columns <- function(df, var_df, n_pheno_cols){
   for (col in c("GID","Rep","Block","Year")){
     df[,col] = as.integer(df[,col])
   }
+
+  # iterate through columns and properly type each one
   first_var_col <- ncol(df) - n_pheno_cols + 1
   for (j in first_var_col:ncol(df)){
     var_name <- colnames(df)[j]
@@ -486,22 +520,40 @@ type_obsdf_columns <- function(df, var_df, n_pheno_cols){
     level_str <- var_df |>
       dplyr::filter(.data$Name == var_name) |>
       dplyr::pull("Categories")
+
     if (dtype == "Numerical"){
+      # NA / na strings are allowed in DeltaBreed numeric columns
+      # account for this so you don't throw a warning and freak people out
+      df[,j] <- ifelse(df[,j] %in% c("NA","na","Na","N/A","n/a"),
+                       NA, df[,j])
       df[,j] <- as.numeric(df[,j])
     } else if (dtype == "Text"){
       df[,j] <- as.character(df[,j])
     } else if (dtype == "Nominal"){
-      df[,j] <- factor(df[,j],
-                       levels = strsplit(level_str, "; *")[[1]])
+      true_levels <- strsplit(level_str, "; *")[[1]]
+      if (case_correct == TRUE){
+        corrected <- case_correct_nominal(df[,j], true_levels)
+        df[,j] <- factor(corrected, levels = true_levels)
+        } else {
+        df[,j] <- factor(df[,j],
+                         levels = true_levels)
+      }
+
     } else if (dtype == "Ordinal"){
       # we expect 1=Low; 2=Medium, etc, but that's not actually enforced
       # people could use 3=High;2=Medium;1=Low, A=Low,B=Medium;C=High, etc
       # can't fix everything, just use the ordering of levels as it occurs in the db itself
       split_once <- strsplit(level_str, "; *")[[1]]
       split_twice <- strsplit(split_once, "= *")
-      vals <- sapply(split_twice, function(x) x[1])
-      df[,j] <- factor(df[,j],
-                       levels = sapply(split_twice, function(x) x[1]))
+      true_levels <- sapply(split_twice, function(x) x[1])
+      # the case correction function works here
+      if (case_correct == TRUE){
+        corrected <- case_correct_nominal(df[,j], true_levels)
+        df[,j] <- factor(corrected, levels = true_levels)
+      } else {
+        df[,j] <- factor(df[,j],
+                         levels = true_levels)
+      }
     } else if (dtype == "Date"){
       df[,j] <- as.Date(df[,j],
                         format = "%Y-%m-%d")
@@ -514,5 +566,19 @@ type_obsdf_columns <- function(df, var_df, n_pheno_cols){
   return(df)
 }
 
-
-
+# DeltaBreed v1.5 will let you upload obs data with a non-case-sensitive match to the true levels
+# e.g. you can have defined levels A/B/C but DB will permit you to upload a/b/c
+# account for this by case-correcting where possible
+# only case-correct if the incorrect value matches exactly one predefined level
+case_correct_nominal <- function(nominal_vec, true_levels){
+  unmatched_values <- setdiff(nominal_vec, true_levels)
+  for (val in unmatched_values){
+    noncase_match <- grepl(paste0("^",val,"$"), # only full matches, don't match "D" to "Digbert"
+                           true_levels,
+                           ignore.case = TRUE)
+    if (sum(noncase_match) == 1){
+      nominal_vec[which(nominal_vec == val)] <- true_levels[noncase_match]
+    }
+  }
+  return(nominal_vec)
+}

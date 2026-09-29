@@ -22,7 +22,7 @@ test_that("variables df is correct shape and has correct column names", {
   vcr::local_cassette("get_variables")
   login_deltabreed(reltest_url, reltest_token, verbose = FALSE)
   vars <- get_variables(verbose = FALSE)
-  expect_shape(vars, dim = c(21,11))
+  expect_shape(vars, dim = c(22,11))
   var_mapping <- define_mapping_variables()
   expect_identical(colnames(vars), names(var_mapping))
 })

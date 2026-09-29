@@ -13,7 +13,7 @@ the BrAPI Information pane.}
 \item{access_token}{A valid Access Token, retrieved from the DeltaBreed user
 interface.}
 
-\item{verbose}{Whether to print out success messages.}
+\item{verbose}{If \code{FALSE}, all non-essential messages will be suppressed.}
 }
 \value{
 No return value, called for side effects (storing credentials)
