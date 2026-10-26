@@ -1,4 +1,4 @@
-# deltabreedquery <img src="https://github.com/Breeding-Insight/deltabreedquery/blob/main/man/figures/logo_deltabreedquery.png" align="right" width="200"/>
+# deltabreedquery <img src="https://github.com/Breeding-Insight/deltabreedquery/blob/main/man/figures/logo_deltabreedquery.png" align="right" width="200" alt="deltabreedquery logo"/>
 
 This is an R package to pull data from Breeding Insight's [DeltaBreed](https://sandbox.breedinginsight.net/) platform into R via [BrAPI](https://brapi.org/) calls. It offers basic functions to retrieve four types of data:
 
@@ -30,13 +30,12 @@ obs <- get_observations()
 
 ## Installation
 
-To install the latest version, first make sure the `remotes` package is installed, then run:
+To install the latest stable version from CRAN, use `install.packages()` and `library()` as normal to install and load the package:
 
 ```
-remotes::install_github("breeding-insight/deltabreedquery")
+install.packages("deltabreedquery")
+library(deltabreedquery)
 ```
-
-The library can then be loaded per usual with `library(deltabreedquery)`.
 
 ## Authentication
 To retrieve data from your DeltaBreed instance, you will need two things:
