@@ -461,6 +461,8 @@ sort_obsdf_rows <- function(df){
                                            rank(as.integer(.data$SubUnitID)),
                                            rank(.data$SubUnitID))) |>
     dplyr::arrange(.data$ExpName,
+                   .data$Year,
+                   .data$Location,
                    .data$EnvName,
                    .data$has_subobs,
                    .data$new_order_obs,
@@ -494,19 +496,27 @@ sort_obsdf_columns <- function(df, n_pheno_cols){
 # apply appropriate data types using the obs variable definitions in /variables endpoint
 # dtypes are present in the initial JSON but lost upon import to R
 type_obsdf_columns <- function(df, var_df, n_pheno_cols, case_correct = TRUE){
-  if (n_pheno_cols == 0){
-    return(df)
-  }
   # Date class doesn't work on tibbles, so ensure it's a vanilla df first
   # accessing first element here bc class(tibble) = c(tbl_df, tbl, data.frame)
   if (class(df)[1] != "data.frame"){ df <- as.data.frame(df) }
 
-  # Row and Column are allowed to be non-integers, so don't convert them
+  # these columns are all required to be integers by DeltaBreed backend
   for (col in c("GID","Rep","Block","Year")){
-    df[,col] = as.integer(df[,col])
+    df[,col] <- as.integer(df[,col])
   }
 
-  # iterate through columns and properly type each one
+  # row/column are allowed to be non-ints, but coerce to int if you can
+  for (col in c("Row", "Column")){
+    if (all(grepl("^[0-9]+$", df[,col]))){
+      df[,col] <- as.integer(df[,col])
+    }
+  }
+
+  if (n_pheno_cols == 0){
+    return(df)
+  }
+
+  # iterate through phenotype columns and properly type each one
   first_var_col <- ncol(df) - n_pheno_cols + 1
   for (j in first_var_col:ncol(df)){
     var_name <- colnames(df)[j]
@@ -534,7 +544,7 @@ type_obsdf_columns <- function(df, var_df, n_pheno_cols, case_correct = TRUE){
       if (case_correct == TRUE){
         corrected <- case_correct_nominal(df[,j], true_levels)
         df[,j] <- factor(corrected, levels = true_levels)
-        } else {
+      } else {
         df[,j] <- factor(df[,j],
                          levels = true_levels)
       }
