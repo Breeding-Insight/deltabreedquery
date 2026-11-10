@@ -17,10 +17,8 @@
 #' vars
 get_variables <- function(verbose = TRUE,
                           include_archived = FALSE) {
-  if (!auth_exists()) {
-    stop("No authentication credentials found. ",
-         "Please run login_deltabreed() to authenticate first.")
-  }
+  require_auth()
+
   # BrAPI nomenclature around trait endpoints is a bit confusing
   # lots of endpoints, but the one we need is mostly in /variables
   if (is_example_mode()) {

@@ -33,11 +33,9 @@ get_observations <- function(page_size = 10000,
                              include_dbids = FALSE,
                              case_correct = TRUE,
                              verbose = TRUE) {
-  if (!auth_exists()) {
-    stop("No authentication credentials found.",
-         "Please run login_deltabreed() to authenticate first.")
-  }
+  require_auth()
   if (verbose) message("Fetching observation units...")
+
   if (is_example_mode()) {
     df_obsunits <- load_example_json("observationunits.json") |> json_list_to_df()
   } else {
@@ -193,11 +191,8 @@ filter_observations <- function(year = NA,
     stop("Please specify a year, location, experiment name, environment name, and/or experiment type. ",
          "To retrieve all observation data, use get_observations().")
   }
-  if (!auth_exists()) {
-    stop("No authentication credentials found. ",
-         "Please run login_deltabreed() to authenticate first.")
-  }
 
+  require_auth()
   # filtering is done using a series of GET requests with study (envt) DBIDs
   # first, check if any studies actually exist matching the filter parameters
   expts <- get_experiments(verbose = FALSE, include_dbids = TRUE)

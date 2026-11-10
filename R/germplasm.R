@@ -14,10 +14,7 @@
 #' germplasm <- get_germplasm()
 #' head(germplasm)
 get_germplasm <- function(page_size = 10000) {
-  if (!auth_exists()) {
-    stop("No authentication credentials found. ",
-         "Please run login_deltabreed() to authenticate first.")
-  }
+  require_auth()
   if (is_example_mode()) {
     df <- load_example_json("germplasm.json") |> json_list_to_df()
   } else {

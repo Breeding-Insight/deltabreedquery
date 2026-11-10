@@ -19,10 +19,8 @@
 #' @importFrom rlang .data
 get_experiments <- function(verbose = TRUE,
                             include_dbids = FALSE) {
-  if (!auth_exists()) {
-    stop("No authentication credentials found. ",
-         "Please run login_deltabreed() to authenticate first.")
-  }
+  require_auth()
+
   # Need to pull from trials, studies, and seasons endpoints
   if (is_example_mode()) {
     df_trials <- load_example_json("trials.json") |> json_list_to_df()
