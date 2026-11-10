@@ -37,11 +37,11 @@ get_variables <- function(verbose = TRUE,
   if (nrow(df) == 0) return(df)
 
   # filter / report
-  if (verbose == TRUE) message("Number of traits found: \t", nrow(df))
+  if (verbose) message("Number of traits found: \t", nrow(df))
   if (!include_archived) {
     df <- df |> dplyr::filter(.data$status != "archived")
   }
-  if (verbose == TRUE) message("Number of active traits found: \t", nrow(df))
+  if (verbose) message("Number of active traits found: \t", nrow(df))
 
   # scale.validValue.categories will only appear if there are any ordinal/nominal vars
   # separate the handling of this column out on its own, simpler this way

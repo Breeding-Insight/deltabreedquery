@@ -71,7 +71,7 @@ get_experiments <- function(verbose = TRUE,
     dplyr::select("seasonDbId",
                   "year")
 
-  if (verbose == TRUE){
+  if (verbose){
     message("Number of Experiments found:  ", nrow(df_trials))
     message("Number of Environments found: ", nrow(df_studies))
   }
@@ -95,8 +95,9 @@ get_experiments <- function(verbose = TRUE,
   }
   df_expts <- brapi_to_db_names(df_expts, mapping_expt) |>
     dplyr::arrange(.data$ExpName,
-                   .data$EnvName,
-                   .data$Year)
+                   .data$Year,
+                   .data$Location,
+                   .data$EnvName)
   df_expts
 }
 
@@ -104,9 +105,9 @@ define_mapping_expts <- function() {
   mapping <- c(
     "ExpName" = "trialName",
     "ExpType" = "additionalInfo.experimentType",
-    "EnvName" = "studyName",
-    "Location" = "locationName",
     "Year" = "year",
+    "Location" = "locationName",
+    "EnvName" = "studyName",
     "CreatedBy" = "additionalInfo.createdBy.userName",
     "CreatedDate" = "additionalInfo.createdDate"
   )
