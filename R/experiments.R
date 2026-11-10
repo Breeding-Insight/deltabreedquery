@@ -94,9 +94,9 @@ get_experiments <- function(verbose = TRUE,
                         "trialDbId" = "trialDbId"))
   }
   df_expts <- brapi_to_db_names(df_expts, mapping_expt) |>
-    dplyr::arrange(.data$Year,
-                   .data$ExpName,
-                   .data$EnvName)
+    dplyr::arrange(.data$ExpName,
+                   .data$EnvName,
+                   .data$Year)
   df_expts
 }
 
