@@ -40,9 +40,8 @@ execute_get_request <- function(req, verbose = FALSE){
 
   # temp fix to get around the bug noted above
   # allow all 500 errors to look like 200 errors with empty responses
-  if (response$status_code == 500){
-    json_list <- list(result = list(data = data.frame()))
-    return(json_list)
+  if (resp$status_code == 500){
+    return(data.frame())
   }
 
   # in future versions, we can merge this with the req_perform() step
@@ -65,8 +64,7 @@ execute_get_request <- function(req, verbose = FALSE){
 
   if (n_records == 0) {
     if (verbose) message("API call was successful but no records were found in the target endpoint.\n")
-    json_list <- list(result = list(data = data.frame()))
-    return(json_list)
+    return(data.frame())
   }
   if (verbose) message("Number of records found: ", n_records, "\n")
 
@@ -125,7 +123,7 @@ brapi_to_db_names <- function(data, mapping_vector){
   renamed
 }
 
-# Load a bundled example JSON file from inst/ and return in json_list format
+# Load a bundled example JSON file from inst/ and return data frame
 load_example_json <- function(filename) {
   path <- system.file(filename, package = "deltabreedquery")
   if (nchar(path) == 0) stop("Example data file not found: ", filename)

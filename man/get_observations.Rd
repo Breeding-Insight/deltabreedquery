@@ -5,7 +5,7 @@
 \title{Retrieve all observation data}
 \usage{
 get_observations(
-  page_size = 10000,
+  page_size = 1e+05,
   drop_empty_columns = FALSE,
   include_dbids = FALSE,
   case_correct = TRUE,

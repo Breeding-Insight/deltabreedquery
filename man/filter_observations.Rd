@@ -5,12 +5,12 @@
 \title{Retrieve a filtered list of observation data}
 \usage{
 filter_observations(
-  year = NA,
-  location = NA,
-  exp_name = NA,
-  env_name = NA,
-  exp_type = NA,
-  page_size = 10000,
+  year = NULL,
+  location = NULL,
+  exp_name = NULL,
+  env_name = NULL,
+  exp_type = NULL,
+  page_size = 1e+05,
   drop_empty_columns = FALSE,
   include_dbids = FALSE,
   case_correct = TRUE,
