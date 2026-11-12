@@ -201,6 +201,7 @@ filter_observations <- function(year = NULL,
                   .data$ExpName %in% exp_name | is.null(exp_name),
                   .data$EnvName %in% env_name | is.null(env_name),
                   .data$ExpType %in% exp_type | is.null(exp_type))
+
   n_envts_found <- nrow(filt_expts)
   if (n_envts_found == 0){
     if (verbose) message("No experiments found with the requested filters.")
