@@ -28,7 +28,7 @@
 #' # phenotype columns will be typed according to the observation variables (trait definitions)
 #' str(obs[,16:20])
 #' get_variables()
-get_observations <- function(page_size = 10000,
+get_observations <- function(page_size = 100000,
                              drop_empty_columns = FALSE,
                              include_dbids = FALSE,
                              case_correct = TRUE,
@@ -37,14 +37,13 @@ get_observations <- function(page_size = 10000,
   if (verbose) message("Fetching observation units...")
 
   if (is_example_mode()) {
-    df_obsunits <- load_example_json("observationunits.json") |> json_list_to_df()
+    df_obsunits <- load_example_json("observationunits.json")
   } else {
     df_obsunits <- build_get_request(.dbc_env$full_url,
                                      .dbc_env$access_token,
                                      "observationunits",
                                      page_size = page_size) |>
-      execute_get_request() |>
-      json_list_to_df()
+      execute_get_request()
   }
 
   # I don't think it's possible for a program to have have valid expts but no obs units defined
@@ -62,20 +61,19 @@ get_observations <- function(page_size = 10000,
                                   by = "studyDbId")
 
   mapping_obsunits <- define_mapping_obsunits()
-  df_obsunits <- handle_subunits_obsdf(df_obsunits)
+  df_obsunits <- unpack_obsunit_levels(df_obsunits)
   df_obsunits <- brapi_to_db_names(df_obsunits,
                                    mapping_obsunits)
 
   if (verbose) message("Fetching phenotype values...")
   if (is_example_mode()) {
-    df_obs <- load_example_json("observations.json") |> json_list_to_df()
+    df_obs <- load_example_json("observations.json")
   } else {
     df_obs <- build_get_request(.dbc_env$full_url,
                                 .dbc_env$access_token,
                                 "observations",
                                 page_size = page_size) |>
-      execute_get_request() |>
-      json_list_to_df()
+      execute_get_request()
   }
 
   if (nrow(df_obs) > 0){
@@ -176,32 +174,33 @@ get_observations <- function(page_size = 10000,
 #' # filters can be combined as needed
 #' ayt_mb <- filter_observations(exp_type = "AYT", location = "Manitoba")
 #' table(ayt_mb$ExpName, ayt_mb$EnvName)
-filter_observations <- function(year = NA,
-                                location = NA,
-                                exp_name = NA,
-                                env_name = NA,
-                                exp_type = NA,
-                                page_size = 10000,
+filter_observations <- function(year = NULL,
+                                location = NULL,
+                                exp_name = NULL,
+                                env_name = NULL,
+                                exp_type = NULL,
+                                page_size = 100000,
                                 drop_empty_columns = FALSE,
                                 include_dbids = FALSE,
                                 case_correct = TRUE,
                                 verbose = TRUE){
   # basic pre-function checks
+  # need to have some filter value, otherwise use get_observations() for clarity's sake
   if (all(is.na(c(year, location, exp_name, env_name, exp_type)))){
     stop("Please specify a year, location, experiment name, environment name, and/or experiment type. ",
          "To retrieve all observation data, use get_observations().")
   }
-
   require_auth()
+
   # filtering is done using a series of GET requests with study (envt) DBIDs
   # first, check if any studies actually exist matching the filter parameters
   expts <- get_experiments(verbose = FALSE, include_dbids = TRUE)
   filt_expts <- expts |>
-    dplyr::filter(.data$Year %in% year | all(is.na(year)),
-                  .data$Location %in% location | all(is.na(location)),
-                  .data$ExpName %in% exp_name | all(is.na(exp_name)),
-                  .data$EnvName %in% env_name | all(is.na(env_name)),
-                  .data$ExpType %in% exp_type | all(is.na(exp_type)))
+    dplyr::filter(.data$Year %in% year | is.null(year),
+                  .data$Location %in% location | is.null(location),
+                  .data$ExpName %in% exp_name | is.null(exp_name),
+                  .data$EnvName %in% env_name | is.null(env_name),
+                  .data$ExpType %in% exp_type | is.null(exp_type))
   n_envts_found <- nrow(filt_expts)
   if (n_envts_found == 0){
     if (verbose) message("No experiments found with the requested filters.")
@@ -213,7 +212,6 @@ filter_observations <- function(year = NA,
     # need a slight workaround, since we can't use query filters on the static response
     # filter the obsunit response to just the relevant obs units
     filt_obsunits <- load_example_json("observationunits.json") |>
-      json_list_to_df() |>
       dplyr::filter(.data$studyDbId %in% filt_expts$studyDbId)
 
     df_final <- get_observations(verbose = verbose,
@@ -242,13 +240,11 @@ filter_observations <- function(year = NA,
       dbid = filt_expts[i,"studyDbId"]
       req_obsunits <- basereq_obsunits |>
         httr2::req_url_query(studyDbId = dbid)
-      obsunit_dfs[[i]] <- execute_get_request(req_obsunits) |>
-        json_list_to_df()
+      obsunit_dfs[[i]] <- execute_get_request(req_obsunits)
 
       req_obs <- basereq_obs |>
         httr2::req_url_query(studyDbId = dbid)
-      obs_dfs[[i]] <- execute_get_request(req_obs) |>
-        json_list_to_df()
+      obs_dfs[[i]] <- execute_get_request(req_obs)
     }
     df_obsunits <- dplyr::bind_rows(obsunit_dfs)
     df_obs <- dplyr::bind_rows(obs_dfs)
@@ -266,7 +262,7 @@ filter_observations <- function(year = NA,
                                     by = "studyDbId")
 
     mapping_obsunits <- define_mapping_obsunits()
-    df_obsunits <- handle_subunits_obsdf(df_obsunits)
+    df_obsunits <- unpack_obsunit_levels(df_obsunits)
     df_obsunits <- brapi_to_db_names(df_obsunits,
                                      mapping_obsunits)
 
@@ -344,7 +340,7 @@ define_mapping_obsunits <- function(){
 # observationUnitPosition.observationLevelRelationships is an array
 # it won't get delisted, instead becomes a 2- or 3-row data frame
 # convert to a named vector, much faster than pivoting each df
-unpack_level_df <- function(relship_df){
+flatten_obslevelrelships <- function(relship_df){
   # level code is static, no matter what the obs unit names are
   # 3 is rep, 4 is block, 0 is either the parent (if one exists) or the unit itself
   rep_block_parent <- relship_df |>
@@ -356,11 +352,13 @@ unpack_level_df <- function(relship_df){
 }
 
 
-# observation units have a fairly complex handling
-# desired output is to have any observation units that have a parent labeled as sub-observation units instead
+# observation unit levels have a fairly complex handling
+# desired output is to label any observation units with a parent as sub-observation units instead
 # if an obs unit with ID 4 has a parent obs unit, that 4 value should NOT go in the obs unit ID column
 # 4 should go in the Sub Obs Unit ID column, and the parent's obs unit ID goes into that column
-handle_subunits_obsdf <- function(df){
+unpack_obsunit_levels <- function(df){
+  # certain subfields of observationUnitPosition field are needed to correctly work out the obs unit levels
+  # validate these exists
   missing_colnames <- setdiff(
     c("observationUnitPosition.observationLevel.levelOrder",
       "observationUnitPosition.observationLevel.levelName",
@@ -376,7 +374,7 @@ handle_subunits_obsdf <- function(df){
          colnames(df))
   }
 
-  # pull levelName and unitName into the appropriate columns
+  # pull levelName and observationUnitName into the appropriate columns
   # levelOrder = 0 for observations, 1 for sub-observations
   df$ExpUnit <- ifelse(df$observationUnitPosition.observationLevel.levelOrder == 0,
                        df$observationUnitPosition.observationLevel.levelName,
@@ -392,21 +390,23 @@ handle_subunits_obsdf <- function(df){
                          NA)
 
   # scrape the df found in each cell of the observationLevelRelationships column
-  # this will remain un-flattened when we run httr2::resp_body_json()
-  # it contains Rep, Block, and the containing ObsUnit (if one exists)
+  # values in this column will remain un-flattened when we run httr2::resp_body_json()
+  # it contains Rep, Block, and the parent ObsUnit (if one exists)
   # vectorizing this could be nice, but it's much easier to read with an index loop
   df$Rep <- NA
   df$Block <- NA
   df$ParentObsUnitDbId <- NA
-  # unpack_level_df() turns the data frame into a 2- or 3-length vector
   for (i in seq(nrow(df))){
-    vals <- unpack_level_df(df[[i,"observationUnitPosition.observationLevelRelationships"]])
+    # flatten_obslevelrelships() turns the data frame into a 2- or 3-length vector
+    # Rep and Block names are always 1st and 2nd values
+    # if a parent exists, it will be third value
+    vals <- flatten_obslevelrelships(df[[i,"observationUnitPosition.observationLevelRelationships"]])
     df[i,"Rep"] <- vals[1]
     df[i,"Block"] <- vals[2]
     if (length(vals) > 2){
       df[i,"ExpUnit"] <- names(vals)[3]
       # the DbID of the parent obs has a suffix like " [CCBMAD-3]"
-      # clean this out before saving
+      # need to clean this out before saving
       df[i,"ParentObsUnitDbId"] <- strsplit(vals[3], " [", fixed = TRUE)[[1]][1]
     }
   }
@@ -424,8 +424,8 @@ handle_subunits_obsdf <- function(df){
 
 # sorting gets kind of complex so that we can handle integer ExpUnitIDs and/or SubUnitIDs
 # for IDs like 1,2,[...],10,11,12, we want to sort that as an integer, not as a string
-# however, when we mix
-# make this check separately within each expt/envt (study level in BrAPI terms)
+# but if should-be-integers and strings are mixed in the final df, then sorting it all at once will fail
+# thus we do the sorting separately within each expt/envt (study level in BrAPI terms)
 sort_obsdf_rows <- function(df){
   missing_colnames <- setdiff(
     c("SubUnitID", "ExpName", "EnvName","ExpUnitID","SubUnitID"),
@@ -473,7 +473,7 @@ sort_obsdf_rows <- function(df){
 
 # ordering of columns in Obs response is random, so we alphabetize for repeatability
 # we could in theory reconstruct column ordering from lists/ endpoint
-# this is bugged on the DeltaBreed end though, icebox for now (June 2026)
+# this is bugged on the DeltaBreed end though, icebox for now (Nov 2026)
 sort_obsdf_columns <- function(df, n_pheno_cols){
   if (n_pheno_cols == 0){
     return(df)

@@ -22,14 +22,13 @@ get_variables <- function(verbose = TRUE,
   # BrAPI nomenclature around trait endpoints is a bit confusing
   # lots of endpoints, but the one we need is mostly in /variables
   if (is_example_mode()) {
-    df <- load_example_json("variables.json") |> json_list_to_df()
+    df <- load_example_json("variables.json")
   } else {
     df <- build_get_request(.dbc_env$full_url,
                             .dbc_env$access_token,
                             "variables",
                             page_size = 1000) |>
-      execute_get_request() |>
-      json_list_to_df()
+      execute_get_request()
   }
 
   if (nrow(df) == 0) return(df)

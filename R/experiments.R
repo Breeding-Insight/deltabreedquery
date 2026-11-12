@@ -23,27 +23,24 @@ get_experiments <- function(verbose = TRUE,
 
   # Need to pull from trials, studies, and seasons endpoints
   if (is_example_mode()) {
-    df_trials <- load_example_json("trials.json") |> json_list_to_df()
-    df_studies <- load_example_json("studies.json") |> json_list_to_df()
-    df_seasons <- load_example_json("seasons.json") |> json_list_to_df()
+    df_trials <- load_example_json("trials.json")
+    df_studies <- load_example_json("studies.json")
+    df_seasons <- load_example_json("seasons.json")
   } else {
     df_trials <- build_get_request(.dbc_env$full_url,
                                    .dbc_env$access_token,
                                    'trials') |>
-      execute_get_request() |>
-      json_list_to_df()
+      execute_get_request()
 
     df_studies <- build_get_request(.dbc_env$full_url,
                                     .dbc_env$access_token,
                                     'studies') |>
-      execute_get_request() |>
-      json_list_to_df()
+      execute_get_request()
 
     df_seasons <- build_get_request(.dbc_env$full_url,
                                     .dbc_env$access_token,
                                     'seasons') |>
-      execute_get_request() |>
-      json_list_to_df()
+      execute_get_request()
   }
 
   if (nrow(df_trials) == 0){

@@ -45,16 +45,17 @@ execute_get_request <- function(req, verbose = FALSE){
     return(json_list)
   }
 
+  # in future versions, we can merge this with the req_perform() step
+  # only need to have it separate for now to accommodate the 500 error
   json_page0 <- resp |>
     httr2::resp_body_json(simplifyVector = TRUE,
                           flatten = TRUE)
+
   # Use the pagination data from the response, not the request
   # Not all endpoints have pageSize implemented
   n_records <- json_page0$metadata$pagination$totalCount
   page_size_response <- json_page0$metadata$pagination$pageSize
   n_pages_response <- json_page0$metadata$pagination$totalPages
-
-  # need to allow for a 500 error on empty response, as noted above
 
   if (json_page0$metadata$pagination$currentPage != 0) {
     stop("Error in pagination data. Page number of an initial server response ",
@@ -67,39 +68,42 @@ execute_get_request <- function(req, verbose = FALSE){
     json_list <- list(result = list(data = data.frame()))
     return(json_list)
   }
-
   if (verbose) message("Number of records found: ", n_records, "\n")
-  responses <- list(response)
 
   # iterate through pages if needed, starting at page 0
   # supply the stopping page ahead of time to avoid superfluous requests
   if (n_pages_response > 1) {
-    responses <- httr2::req_perform_iterative(req,
-                                              httr2::iterate_with_offset("page",
-                                                                         start = 0),
-                                              max_reqs = n_pages_response)
+    all_dfs <- list()
+    all_dfs[[1]] <- json_to_data(json_page0)
+    page_range <- 1:(n_pages_response-1)
+    for (p in page_range){
+      json <- req |>
+        httr2::req_url_query(page = p) |>
+        httr2::req_perform() |>
+        httr2::resp_body_json(simplifyVector = TRUE,
+                              flatten = TRUE)
+      all_dfs[[(p+1)]] <- json_to_data(json)
+    }
+    df_out <- dplyr::bind_rows(all_dfs)
+    if (nrow(df_out) != n_records){
+      warning("Number of records retrieved does not match BrAPI metadata.\n",
+              "metadata$totalCount: ", n_records,
+              "\nRecords retrieved: ", nrow(df_out))
+    }
+  } else {
+    df_out <- json_to_data(json_page0)
   }
-  json_list <- lapply(responses, function(x) httr2::resp_body_json(x,
-                                                                   simplifyVector = TRUE,
-                                                                   flatten = TRUE))
-  json_list
+  df_out
 }
 
 # operates on a single page of JSON response
 json_to_data <- function(json){
   data <- json$result$data
+  # empty results in a valid 200 response are a list() of length 0
   if (length(data) == 0){
     return(data.frame())
   }
   data
-}
-
-# vectorized, produces a data frame of the response data
-# bind_rows is outer join, will include all columns from all data dfs
-json_list_to_df <- function(json_list){
-  df_list <- lapply(json_list, json_to_data)
-  df <- dplyr::bind_rows(df_list)
-  df
 }
 
 # convert column names in a data frame from BrAPI convention to DeltaBreed names
@@ -126,5 +130,6 @@ load_example_json <- function(filename) {
   path <- system.file(filename, package = "deltabreedquery")
   if (nchar(path) == 0) stop("Example data file not found: ", filename)
   json <- jsonlite::fromJSON(path, simplifyVector = TRUE, flatten = TRUE)
-  list(json)
+  df <- json_to_data(json)
+  df
 }
