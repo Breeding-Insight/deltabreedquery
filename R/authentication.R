@@ -57,8 +57,7 @@ login_deltabreed <- function(base_url = NULL, access_token = NULL, verbose = TRU
 
   # Verify that the user has internet access
   if (!httr2::is_online()){
-    stop("No internet connection detected. Please check your connection before \
-         proceeding.")
+    stop("No internet connection detected. Please check your connection before proceeding.")
   }
 
   # Should be no trailing slash, but remove one just to be safe
@@ -202,4 +201,12 @@ check_auth <- function() {
     }
   }
   invisible(TRUE)
+}
+
+# helper function to call at start of each request function
+require_auth <- function() {
+  if (!auth_exists()) {
+    stop("No authentication credentials found. ",
+         "Please run login_deltabreed() to authenticate first.")
+  }
 }

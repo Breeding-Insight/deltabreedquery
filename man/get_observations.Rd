@@ -5,7 +5,7 @@
 \title{Retrieve all observation data}
 \usage{
 get_observations(
-  page_size = 10000,
+  page_size = 1e+05,
   drop_empty_columns = FALSE,
   include_dbids = FALSE,
   case_correct = TRUE,
@@ -35,10 +35,9 @@ A data frame of all observation units and any observations
 (phenotypes).
 }
 \description{
-Retrieves all observation data from a DeltaBreed instance via
-BrAPI call. This includes observation units with no observations.
-converting it into a data frame that mimics the appearance of the data
-tables on the Experiments & Observations tab of DeltaBreed.
+Retrieves all observation units and observation data from a
+DeltaBreed instance via BrAPI call, converting it into a data frame
+resembling the data tables on the Experiments & Observations tab of DeltaBreed.
 }
 \examples{
 login_deltabreed("example", verbose = FALSE)

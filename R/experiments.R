@@ -1,4 +1,4 @@
-#' Retrieve experiment/ summary
+#' Retrieve experiment summary
 #'
 #' @description Retrieves a summary of all experiments and environments in a
 #'   given DeltaBreed program. This may include experiments for which no
@@ -19,33 +19,28 @@
 #' @importFrom rlang .data
 get_experiments <- function(verbose = TRUE,
                             include_dbids = FALSE) {
-  if (!auth_exists()) {
-    stop("No authentication credentials found. ",
-         "Please run login_deltabreed() to authenticate first.")
-  }
+  require_auth()
+
   # Need to pull from trials, studies, and seasons endpoints
   if (is_example_mode()) {
-    df_trials <- load_example_json("trials.json") |> json_list_to_df()
-    df_studies <- load_example_json("studies.json") |> json_list_to_df()
-    df_seasons <- load_example_json("seasons.json") |> json_list_to_df()
+    df_trials <- load_example_json("trials.json")
+    df_studies <- load_example_json("studies.json")
+    df_seasons <- load_example_json("seasons.json")
   } else {
     df_trials <- build_get_request(.dbc_env$full_url,
                                    .dbc_env$access_token,
                                    'trials') |>
-      execute_get_request() |>
-      json_list_to_df()
+      execute_get_request()
 
     df_studies <- build_get_request(.dbc_env$full_url,
                                     .dbc_env$access_token,
                                     'studies') |>
-      execute_get_request() |>
-      json_list_to_df()
+      execute_get_request()
 
     df_seasons <- build_get_request(.dbc_env$full_url,
                                     .dbc_env$access_token,
                                     'seasons') |>
-      execute_get_request() |>
-      json_list_to_df()
+      execute_get_request()
   }
 
   if (nrow(df_trials) == 0){
@@ -71,7 +66,7 @@ get_experiments <- function(verbose = TRUE,
     dplyr::select("seasonDbId",
                   "year")
 
-  if (verbose == TRUE){
+  if (verbose){
     message("Number of Experiments found:  ", nrow(df_trials))
     message("Number of Environments found: ", nrow(df_studies))
   }
@@ -88,14 +83,15 @@ get_experiments <- function(verbose = TRUE,
                                by = "trialDbId")
 
   mapping_expt <- define_mapping_expts()
-  if (include_dbids == TRUE){
+  if (include_dbids){
     mapping_expt <- c(mapping_expt,
                       c("studyDbId" = "studyDbId",
                         "trialDbId" = "trialDbId"))
   }
   df_expts <- brapi_to_db_names(df_expts, mapping_expt) |>
-    dplyr::arrange(.data$Year,
-                   .data$ExpName,
+    dplyr::arrange(.data$ExpName,
+                   .data$Year,
+                   .data$Location,
                    .data$EnvName)
   df_expts
 }
@@ -104,13 +100,11 @@ define_mapping_expts <- function() {
   mapping <- c(
     "ExpName" = "trialName",
     "ExpType" = "additionalInfo.experimentType",
-    "EnvName" = "studyName",
-    "Location" = "locationName",
     "Year" = "year",
+    "Location" = "locationName",
+    "EnvName" = "studyName",
     "CreatedBy" = "additionalInfo.createdBy.userName",
     "CreatedDate" = "additionalInfo.createdDate"
   )
   mapping
 }
-
-

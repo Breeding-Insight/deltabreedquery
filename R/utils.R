@@ -17,16 +17,16 @@ build_get_request <- function(url, token, endpoint, page_size = 10000){
              "\nSpecified BrAPI endpoint not found:" , endpoint, "\n",
              " Please double-check that your BrAPI URL is correct.",
              " If this issue persists, please contact the package maintainers.")
-        # temporary fix to get around DeltaBreed v1.3 bug
-        # all requests with an empty response are returning 500 errors
-        # should be returning empty responses with a 200 status
         # } else if (httr2::resp_status(resp) == 500){
-        #   stop("Status code: 500",
-        #        "\nInternal Server Error. Please record the details of this request ",
-        #        "to the DeltaBreed team to figure out next steps.")
+        # as of Nov 2026, the 500 error on empty responses is still not fixed
+        # leave in this workaround to allow 500 errors to look like 200s with an empty response
+        #   stop("Status code: 500\nInternal Server Error.\n",
+        #        "Please record the URL of the DeltaBreed instance ",
+        #        " you are trying to reach and the function you are trying to execute ",
+        #        " and send these details to the DeltaBreed team to figure out next steps.")
       }
-      !(httr2::resp_status(resp) %in% c(200,500))
       # httr2::resp_status(resp) != 200
+      !(httr2::resp_status(resp) %in% c(200,500))
     })
   req
 }
@@ -34,62 +34,74 @@ build_get_request <- function(url, token, endpoint, page_size = 10000){
 # perform a previously created request, including handling pagination
 # returns list of json objects (which are also lists)
 execute_get_request <- function(req, verbose = FALSE){
-  response <- req |>
+  resp <- req |>
     httr2::req_url_query() |>
     httr2::req_perform()
 
-  # temp fix to get around DeltaBreed 1.3 bug noted above
-  #
-  if (response$status_code == 500){
-    json_list <- list(result = list(data = data.frame()))
-    return(json_list)
+  # temp fix to get around the bug noted above
+  # allow all 500 errors to look like 200 errors with empty responses
+  if (resp$status_code == 500){
+    return(data.frame())
   }
-  json <- response |>
+
+  # in future versions, we can merge this with the req_perform() step
+  # only need to have it separate for now to accommodate the 500 error
+  json_page0 <- resp |>
     httr2::resp_body_json(simplifyVector = TRUE,
                           flatten = TRUE)
+
   # Use the pagination data from the response, not the request
-  # Since not all endpoints have pageSize implemented
-  n_records <- json$metadata$pagination$totalCount
-  page_size_response <- json$metadata$pagination$pageSize
-  n_pages_response <- json$metadata$pagination$totalPages
+  # Not all endpoints have pageSize implemented
+  n_records <- json_page0$metadata$pagination$totalCount
+  page_size_response <- json_page0$metadata$pagination$pageSize
+  n_pages_response <- json_page0$metadata$pagination$totalPages
+
+  if (json_page0$metadata$pagination$currentPage != 0) {
+    stop("Error in pagination data. Page number of an initial server response ",
+         "should be 0, but current page number is: ",
+         json_page0$metadata$pagination$currentPage)
+  }
 
   if (n_records == 0) {
-    if (verbose == TRUE) message("API call was successful but no records were found in the target endpoint.\n")
-    json_list <- list(result = list(data = data.frame()))
-    return(json_list)
+    if (verbose) message("API call was successful but no records were found in the target endpoint.\n")
+    return(data.frame())
   }
-  if (verbose == TRUE) message("Number of records found: ", n_records, "\n")
-  responses <- list(response)
+  if (verbose) message("Number of records found: ", n_records, "\n")
 
   # iterate through pages if needed, starting at page 0
   # supply the stopping page ahead of time to avoid superfluous requests
   if (n_pages_response > 1) {
-    responses <- httr2::req_perform_iterative(req,
-                                              httr2::iterate_with_offset("page",
-                                                                         start = 0),
-                                              max_reqs = n_pages_response)
+    all_dfs <- list()
+    all_dfs[[1]] <- json_to_data(json_page0)
+    page_range <- 1:(n_pages_response-1)
+    for (p in page_range){
+      json <- req |>
+        httr2::req_url_query(page = p) |>
+        httr2::req_perform() |>
+        httr2::resp_body_json(simplifyVector = TRUE,
+                              flatten = TRUE)
+      all_dfs[[(p+1)]] <- json_to_data(json)
+    }
+    df_out <- dplyr::bind_rows(all_dfs)
+    if (nrow(df_out) != n_records){
+      warning("Number of records retrieved does not match BrAPI metadata.\n",
+              "metadata$totalCount: ", n_records,
+              "\nRecords retrieved: ", nrow(df_out))
+    }
+  } else {
+    df_out <- json_to_data(json_page0)
   }
-  json_list <- lapply(responses, function(x) httr2::resp_body_json(x,
-                                                              simplifyVector = TRUE,
-                                                              flatten = TRUE))
-  json_list
+  df_out
 }
 
 # operates on a single page of JSON response
 json_to_data <- function(json){
   data <- json$result$data
+  # empty results in a valid 200 response are a list() of length 0
   if (length(data) == 0){
     return(data.frame())
   }
   data
-}
-
-# vectorized, produces a data frame of the response data
-# bind_rows is outer join, will include all columns from all data dfs
-json_list_to_df <- function(json_list){
-  df_list <- lapply(json_list, json_to_data)
-  df <- dplyr::bind_rows(df_list)
-  df
 }
 
 # convert column names in a data frame from BrAPI convention to DeltaBreed names
@@ -111,10 +123,11 @@ brapi_to_db_names <- function(data, mapping_vector){
   renamed
 }
 
-# Load a bundled example JSON file from inst/ and return in json_list format
+# Load a bundled example JSON file from inst/ and return data frame
 load_example_json <- function(filename) {
   path <- system.file(filename, package = "deltabreedquery")
   if (nchar(path) == 0) stop("Example data file not found: ", filename)
   json <- jsonlite::fromJSON(path, simplifyVector = TRUE, flatten = TRUE)
-  list(json)
+  df <- json_to_data(json)
+  df
 }

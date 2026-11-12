@@ -14,19 +14,15 @@
 #' germplasm <- get_germplasm()
 #' head(germplasm)
 get_germplasm <- function(page_size = 10000) {
-  if (!auth_exists()) {
-    stop("No authentication credentials found. ",
-         "Please run login_deltabreed() to authenticate first.")
-  }
+  require_auth()
   if (is_example_mode()) {
-    df <- load_example_json("germplasm.json") |> json_list_to_df()
+    df <- load_example_json("germplasm.json")
   } else {
     df <- build_get_request(.dbc_env$full_url,
                               .dbc_env$access_token,
                               "germplasm",
                               page_size = page_size) |>
-      execute_get_request() |>
-      json_list_to_df()
+      execute_get_request()
   }
 
   if (nrow(df) == 0){

@@ -27,7 +27,7 @@ test_that("variables df is correct shape and has correct column names", {
   expect_identical(colnames(vars), names(var_mapping))
 })
 
-test_that("experiments df is correct shape and has correct column mames", {
+test_that("experiments df is correct shape and has correct column names", {
   vcr::local_cassette("get_experiments")
   login_deltabreed(reltest_url, reltest_token, verbose = FALSE)
   expts <- get_experiments(verbose = FALSE)

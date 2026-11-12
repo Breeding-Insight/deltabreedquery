@@ -17,31 +17,28 @@
 #' vars
 get_variables <- function(verbose = TRUE,
                           include_archived = FALSE) {
-  if (!auth_exists()) {
-    stop("No authentication credentials found. ",
-         "Please run login_deltabreed() to authenticate first.")
-  }
+  require_auth()
+
   # BrAPI nomenclature around trait endpoints is a bit confusing
   # lots of endpoints, but the one we need is mostly in /variables
   if (is_example_mode()) {
-    df <- load_example_json("variables.json") |> json_list_to_df()
+    df <- load_example_json("variables.json")
   } else {
     df <- build_get_request(.dbc_env$full_url,
                             .dbc_env$access_token,
                             "variables",
                             page_size = 1000) |>
-      execute_get_request() |>
-      json_list_to_df()
+      execute_get_request()
   }
 
   if (nrow(df) == 0) return(df)
 
   # filter / report
-  if (verbose == TRUE) message("Number of traits found: \t", nrow(df))
+  if (verbose) message("Number of traits found: \t", nrow(df))
   if (!include_archived) {
     df <- df |> dplyr::filter(.data$status != "archived")
   }
-  if (verbose == TRUE) message("Number of active traits found: \t", nrow(df))
+  if (verbose) message("Number of active traits found: \t", nrow(df))
 
   # scale.validValue.categories will only appear if there are any ordinal/nominal vars
   # separate the handling of this column out on its own, simpler this way
@@ -108,5 +105,3 @@ define_mapping_variables <- function(){
   )
   mapping
 }
-
-
