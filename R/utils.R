@@ -17,15 +17,16 @@ build_get_request <- function(url, token, endpoint, page_size = 10000){
              "\nSpecified BrAPI endpoint not found:" , endpoint, "\n",
              " Please double-check that your BrAPI URL is correct.",
              " If this issue persists, please contact the package maintainers.")
-      } else if (httr2::resp_status(resp) == 500){
-        # fairly sure that the bug from 1.3 wherein empty responses return 500 errors is fully fixed
-        # re-implementing the 500 error handling
-        stop("Status code: 500",
-             "\nInternal Server Error. Please record the URL of the DeltaBreed instance ",
-             " you are trying to reach and the function you are trying to execute ",
-             " and send these details to the DeltaBreed team to figure out next steps.")
+        # } else if (httr2::resp_status(resp) == 500){
+        # as of Nov 2026, the 500 error on empty responses is still not fixed
+        # leave in this workaround to allow 500 errors to look like 200s with an empty response
+        #   stop("Status code: 500\nInternal Server Error.\n",
+        #        "Please record the URL of the DeltaBreed instance ",
+        #        " you are trying to reach and the function you are trying to execute ",
+        #        " and send these details to the DeltaBreed team to figure out next steps.")
       }
-      httr2::resp_status(resp) != 200
+      # httr2::resp_status(resp) != 200
+      !(httr2::resp_status(resp) %in% c(200,500))
     })
   req
 }
@@ -33,9 +34,18 @@ build_get_request <- function(url, token, endpoint, page_size = 10000){
 # perform a previously created request, including handling pagination
 # returns list of json objects (which are also lists)
 execute_get_request <- function(req, verbose = FALSE){
-  json_page0 <- req |>
+  resp <- req |>
     httr2::req_url_query() |>
-    httr2::req_perform() |>
+    httr2::req_perform()
+
+  # temp fix to get around the bug noted above
+  # allow all 500 errors to look like 200 errors with empty responses
+  if (response$status_code == 500){
+    json_list <- list(result = list(data = data.frame()))
+    return(json_list)
+  }
+
+  json_page0 <- resp |>
     httr2::resp_body_json(simplifyVector = TRUE,
                           flatten = TRUE)
   # Use the pagination data from the response, not the request
@@ -44,8 +54,12 @@ execute_get_request <- function(req, verbose = FALSE){
   page_size_response <- json_page0$metadata$pagination$pageSize
   n_pages_response <- json_page0$metadata$pagination$totalPages
 
+  # need to allow for a 500 error on empty response, as noted above
+
   if (json_page0$metadata$pagination$currentPage != 0) {
-    stop("")
+    stop("Error in pagination data. Page number of an initial server response ",
+         "should be 0, but current page number is: ",
+         json_page0$metadata$pagination$currentPage)
   }
 
   if (n_records == 0) {
@@ -53,6 +67,7 @@ execute_get_request <- function(req, verbose = FALSE){
     json_list <- list(result = list(data = data.frame()))
     return(json_list)
   }
+
   if (verbose) message("Number of records found: ", n_records, "\n")
   responses <- list(response)
 
