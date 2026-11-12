@@ -6,13 +6,13 @@ http_interactions:
     status: 200
     headers:
       Server: nginx/1.28.0
-      Date: Mon, 28 Sep 2026 13:45:41 GMT
+      Date: Thu, 12 Nov 2026 20:07:15 GMT
       Content-Type: application/json
       Content-Length: '239'
       Connection: keep-alive
     body:
       string: '{"metadata":{"pagination":{"pageSize":1,"totalCount":1,"totalPages":1,"currentPage":0}},"result":{"data":[{"programDbId":"f152169d-049f-4a7c-b5d8-c725b14e66f0","abbreviation":"OATABD","commonCropName":"Oat","programName":"Oat-Aberdeen"}]}}'
-  recorded_at: 2026-09-28 13:45:41
+  recorded_at: 2026-11-12 20:07:15
 - request:
     method: GET
     uri: https://rel-test.breedinginsight.net/v1/programs/f152169d-049f-4a7c-b5d8-c725b14e66f0/brapi/v2/variables?pageSize=1000
@@ -20,7 +20,7 @@ http_interactions:
     status: 200
     headers:
       Server: nginx/1.28.0
-      Date: Mon, 28 Sep 2026 13:45:41 GMT
+      Date: Thu, 12 Nov 2026 20:07:15 GMT
       Content-Type: application/json
       Content-Length: '3234'
       Connection: keep-alive
@@ -70,5 +70,5 @@ http_interactions:
         severity - 0-9 Rating"],"traitName":"Lodging","traitDbId":"8b67f83e-b42b-48c9-b3e4-cfb5be697d7c"}},{"observationVariableDbId":"23cc761e-72c3-4c98-9bde-a39faf5eab67","observationVariableName":"GroatPer","method":{"methodDbId":"4c4309f7-a048-46b2-8c32-299893a83e53","methodClass":"Measurement","ontologyReference":{"ontologyDbId":"efe6fdf8-bdb4-42de-83db-2a956489fcf7"}},"scale":{"dataType":"Numerical","ontologyReference":{"ontologyDbId":"efe6fdf8-bdb4-42de-83db-2a956489fcf7"},"scaleName":"%","validValues":{"max":100,"min":0},"scaleDbId":"ebbc5482-039d-43dc-ae6f-53113f7b9864"},"status":"active","synonyms":["GroatPer","Groat
         content (machine dehulled) - percent"],"trait":{"attribute":"Groat percent","entity":"Grain","ontologyReference":{"ontologyDbId":"efe6fdf8-bdb4-42de-83db-2a956489fcf7"},"status":"active","synonyms":["GroatPer","Groat
         content (machine dehulled) - percent"],"traitName":"GroatPer","traitDbId":"23cc761e-72c3-4c98-9bde-a39faf5eab67"}}]}}'
-  recorded_at: 2026-09-28 13:45:41
+  recorded_at: 2026-11-12 20:07:15
 recorded_with: VCR-vcr/2.1.0

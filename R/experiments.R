@@ -1,4 +1,4 @@
-#' Retrieve experiment/ summary
+#' Retrieve experiment summary
 #'
 #' @description Retrieves a summary of all experiments and environments in a
 #'   given DeltaBreed program. This may include experiments for which no
@@ -83,7 +83,7 @@ get_experiments <- function(verbose = TRUE,
                                by = "trialDbId")
 
   mapping_expt <- define_mapping_expts()
-  if (include_dbids == TRUE){
+  if (include_dbids){
     mapping_expt <- c(mapping_expt,
                       c("studyDbId" = "studyDbId",
                         "trialDbId" = "trialDbId"))
@@ -108,5 +108,3 @@ define_mapping_expts <- function() {
   )
   mapping
 }
-
-

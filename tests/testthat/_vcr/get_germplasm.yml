@@ -6,13 +6,13 @@ http_interactions:
     status: 200
     headers:
       Server: nginx/1.28.0
-      Date: Mon, 28 Sep 2026 13:45:41 GMT
+      Date: Thu, 12 Nov 2026 20:07:15 GMT
       Content-Type: application/json
       Content-Length: '239'
       Connection: keep-alive
     body:
       string: '{"metadata":{"pagination":{"pageSize":1,"totalCount":1,"totalPages":1,"currentPage":0}},"result":{"data":[{"programDbId":"f152169d-049f-4a7c-b5d8-c725b14e66f0","abbreviation":"OATABD","commonCropName":"Oat","programName":"Oat-Aberdeen"}]}}'
-  recorded_at: 2026-09-28 13:45:41
+  recorded_at: 2026-11-12 20:07:15
 - request:
     method: GET
     uri: https://rel-test.breedinginsight.net/v1/programs/f152169d-049f-4a7c-b5d8-c725b14e66f0/brapi/v2/germplasm?pageSize=10000
@@ -20,7 +20,7 @@ http_interactions:
     status: 200
     headers:
       Server: nginx/1.28.0
-      Date: Mon, 28 Sep 2026 13:45:41 GMT
+      Date: Thu, 12 Nov 2026 20:07:15 GMT
       Content-Type: application/json
       Content-Length: '4059'
       Connection: keep-alive
@@ -121,5 +121,5 @@ http_interactions:
         seed descent","breedingMethodId":"01ca6899-a79e-479b-a9f6-27cb6f06a6d8","importEntryNumber":"2","rawPedigree":"","pedigreeByName":"","pedigreeByUUID":""},"breedingMethodDbId":"01ca6899-a79e-479b-a9f6-27cb6f06a6d8","commonCropName":"Oat","defaultDisplayName":"MN17111X_024","externalReferences":[{"referenceId":"87601e4f-a8b0-482b-b137-811813ce5c10","referenceID":"87601e4f-a8b0-482b-b137-811813ce5c10","referenceSource":"breedinginsight.org"},{"referenceId":"f152169d-049f-4a7c-b5d8-c725b14e66f0","referenceID":"f152169d-049f-4a7c-b5d8-c725b14e66f0","referenceSource":"breedinginsight.org/programs"}],"germplasmName":"MN17111X_024","seedSource":"internal","synonyms":[{"synonym":"MN17111X024"},{"synonym":"MN-17111X-024"},{"synonym":"MN17111X-024"}]},{"germplasmDbId":"caf555d3-8806-4794-9169-eea046f51649","accessionNumber":"1","additionalInfo":{"createdBy":{"userId":"9381a364-4cc0-4782-a3e3-5a4208659c1b","userName":"Tyr
         Wiesner-Hanks"},"createdDate":"03/12/2025 15:53:42","breedingMethod":"Single
         seed descent","breedingMethodId":"01ca6899-a79e-479b-a9f6-27cb6f06a6d8","importEntryNumber":"1","rawPedigree":"","pedigreeByName":"","pedigreeByUUID":""},"breedingMethodDbId":"01ca6899-a79e-479b-a9f6-27cb6f06a6d8","commonCropName":"Oat","defaultDisplayName":"IL15-8735","externalReferences":[{"referenceId":"38a336dd-a1df-49c4-91a5-7481de39169c","referenceID":"38a336dd-a1df-49c4-91a5-7481de39169c","referenceSource":"breedinginsight.org"},{"referenceId":"f152169d-049f-4a7c-b5d8-c725b14e66f0","referenceID":"f152169d-049f-4a7c-b5d8-c725b14e66f0","referenceSource":"breedinginsight.org/programs"}],"germplasmName":"IL15-8735","seedSource":"internal","synonyms":[{"synonym":"15-8735"}]}]}}'
-  recorded_at: 2026-09-28 13:45:41
+  recorded_at: 2026-11-12 20:07:15
 recorded_with: VCR-vcr/2.1.0

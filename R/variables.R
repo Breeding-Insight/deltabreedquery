@@ -105,5 +105,3 @@ define_mapping_variables <- function(){
   )
   mapping
 }
-
-

@@ -2,7 +2,7 @@
 % Please edit documentation in R/experiments.R
 \name{get_experiments}
 \alias{get_experiments}
-\title{Retrieve experiment/ summary}
+\title{Retrieve experiment summary}
 \usage{
 get_experiments(verbose = TRUE, include_dbids = FALSE)
 }

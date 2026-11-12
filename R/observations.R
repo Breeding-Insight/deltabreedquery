@@ -1,9 +1,8 @@
 #' Retrieve all observation data
 #'
-#' @description Retrieves all observation data from a DeltaBreed instance via
-#'   BrAPI call. This includes observation units with no observations.
-#'   converting it into a data frame that mimics the appearance of the data
-#'   tables on the Experiments & Observations tab of DeltaBreed.
+#' @description Retrieves all observation units and observation data from a
+#' DeltaBreed instance via BrAPI call, converting it into a data frame 
+#' resembling the data tables on the Experiments & Observations tab of DeltaBreed.
 #'
 #' @param page_size Page size to use for the response. Larger page sizes may
 #'   decrease total retrieval time.
@@ -98,7 +97,7 @@ get_observations <- function(page_size = 100000,
   }
 
   # drop columns as needed
-  if (include_dbids == FALSE){
+  if (! include_dbids){
     df_final <- df_final |>
       dplyr::select(!c("ObsUnitDbId", "ParentObsUnitDbId"))
   }
@@ -127,7 +126,7 @@ get_observations <- function(page_size = 100000,
 
 #' Retrieve a filtered list of observation data
 #'
-#' @description This function retrieves a foo filtered list of observation data
+#' @description This function retrieves a filtered list of observation data
 #'   using one or more filter values provided by the user, packaging the
 #'   response into a data frame of the same format as [get_observations()].
 #'
@@ -288,7 +287,7 @@ filter_observations <- function(year = NULL,
     }
   }
 
-  if (include_dbids == FALSE){
+  if (! include_dbids){
     df_final <- df_final |>
       dplyr::select(!c("ObsUnitDbId", "ParentObsUnitDbId"))
   }
@@ -429,15 +428,15 @@ unpack_obsunit_levels <- function(df){
 # thus we do the sorting separately within each expt/envt (study level in BrAPI terms)
 sort_obsdf_rows <- function(df){
   missing_colnames <- setdiff(
-    c("SubUnitID", "ExpName", "EnvName","ExpUnitID","SubUnitID"),
+    c("SubUnitID", "ExpName", "EnvName","ExpUnitID"),
     colnames(df)
   )
   if (length(missing_colnames) > 0){
     stop("One or more necessary column(s) are missing from data frame to be sorted.\n",
          "Missing column(s):\n",
-         paste(missing_colnames, sep = "\n"),
+         paste(missing_colnames, collapse = "\n"),
          "Column names of df being sorted:",
-         paste(colnames(df), sep = "\n"))
+         paste(colnames(df), collapse = "\n"))
   }
 
   df <- df |>

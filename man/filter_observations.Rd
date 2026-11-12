@@ -49,7 +49,7 @@ appropriate values.}
 A data frame of observations using the supplied filters.
 }
 \description{
-This function retrieves a foo filtered list of observation data
+This function retrieves a filtered list of observation data
 using one or more filter values provided by the user, packaging the
 response into a data frame of the same format as \code{\link[=get_observations]{get_observations()}}.
 
